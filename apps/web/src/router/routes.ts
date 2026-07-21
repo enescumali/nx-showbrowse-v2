@@ -19,6 +19,11 @@ export const routes = [
     component: () => import('../views/PopularList.vue'),
   },
   {
+    path: '/catalog',
+    name: 'Catalog',
+    component: () => import('../views/Catalog.vue'),
+  },
+  {
     path: '/today',
     name: 'Today',
     component: () => import('../views/Today.vue'),

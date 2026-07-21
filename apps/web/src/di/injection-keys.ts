@@ -3,7 +3,7 @@ import { inject } from 'vue';
 import type { Show, ShowDetail } from '@show-browse/shows';
 
 export interface ShowsUseCases {
-  getShows(): Promise<Show[]>;
+  getShows(page?: number): Promise<Show[]>;
   getShowDetail(id: string | number): Promise<ShowDetail>;
   searchShows(query: string): Promise<Show[]>;
   getShowsByCountry(country: string): Promise<Show[]>;

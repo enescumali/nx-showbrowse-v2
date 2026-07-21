@@ -35,6 +35,7 @@ npm run test:e2e
 
 - Browse TV shows grouped by genre, each sorted by rating
 - Top-rated shows hero banner on the home screen
+- All Shows: paginated browsing of the full TVMaze catalog, with a genre filter and sort (rating, release date, or title) scoped to the currently loaded page — page, filter, and sort are all reflected in the URL so a filtered/sorted view can be shared or bookmarked
 - Filter shows by country (today's schedule)
 - Search shows by name
 - Full show detail page with cast
@@ -73,7 +74,18 @@ Nx enforces hard boundaries between `packages/` and `apps/` at the linter level,
 
 ### Caching
 
-`packages/shows/src/services/show.service.ts` implements a simple in-memory TTL cache (managed in environment variables, fallbacks to 5 minutes) per data type. This avoids redundant API calls during navigation without introducing an external dependency.
+`packages/shows/src/services/show.service.ts` implements a simple in-memory TTL cache (managed in environment variables, fallbacks to 5 minutes) per data type. Each TVMaze page is now cached under its own key (`shows:0`, `shows:1`, ...), so paging back and forth on the Catalog page doesn't re-hit the network.
+
+### Why "Browse by Genre" and "All Shows" are separate pages
+
+TVMaze's `/shows` index endpoint paginates 250 shows at a time, but it has no genre-aware endpoint — genre grouping only exists once shows are fetched and mapped client-side (`groupShowsByGenre`). That creates a real conflict: if a single view tried to paginate the index *and* stay grouped-by-genre-and-sorted-by-rating, every newly loaded page would reshuffle shows that are already on screen, since a higher-rated show on page 3 might belong in a genre section the user is already looking at from page 0.
+
+Rather than fight that, the app splits the two concerns into two pages:
+
+- **Home (`/`)** groups a single bounded snapshot (TVMaze page 0) by genre and sorts each group by rating. Nothing paginates here, so nothing reshuffles — this is the page that showcases genre browsing and rating sort.
+- **All Shows (`/catalog`)** is where real pagination lives: Prev/Next (plus a direct "jump to page" input) walk the actual TVMaze index page by page. Its genre filter and rating-sort toggle are intentionally **page-local** — they only reorder/filter the shows already loaded on the current page and never trigger a refetch, so they don't reintroduce the reshuffle problem.
+
+TVMaze doesn't return a total page count, and per their own docs the index can have sparse gaps that 404 on an otherwise valid page number. `useShowCatalog` (`apps/web/src/composables/useShowCatalog.ts`) handles this by tracking the last *attempted* page separately from the last *successfully loaded* one: Next/Prev always advance the attempt cursor, but the displayed shows only update on success. A failed page shows an inline notice without blanking the grid, and clicking Next again continues walking forward instead of retrying the same failing page.
 
 ## Tech Stack
 
@@ -132,6 +144,11 @@ npm ci
 ```
 
 This will install exactly what is in the lock file, guaranteeing reproducible builds for all contributors and CI.
+
+## Known limitations
+
+- "Browse by Genre" on Home is scoped to a single TVMaze page (250 shows), not the entire catalog — see [Why "Browse by Genre" and "All Shows" are separate pages](#why-browse-by-genre-and-all-shows-are-separate-pages) for the reasoning.
+- The genre filter and sort options on the All Shows page apply only to the currently loaded page, not the full catalog, for the same reason. A shared link that includes `?genre=` may show no results if the linked page's content has changed by the time it's opened — the filter resets to "All genres" automatically in that case rather than showing a blank state silently.
 
 ## Possible improvement points
 

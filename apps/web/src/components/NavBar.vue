@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
+import { computed, ref, nextTick, watch } from 'vue';
 import { RouterLink, useRouter, useRoute } from 'vue-router';
+import { useShows } from '../composables/useShows';
+import { useGenreGroups } from '../composables/useGenreGroups';
 
 const router = useRouter();
 const route = useRoute();
+
+// Genre nav links are derived from the same bounded snapshot the Dashboard
+// uses, so they always reflect genres that actually have shows.
+const { shows } = useShows();
+const { genreGroups } = useGenreGroups(shows);
+const navGenres = computed(() =>
+  [...genreGroups.value]
+    .sort(([, a], [, b]) => b.length - a.length)
+    .slice(0, 6)
+    .map(([genre]) => genre),
+);
 
 const searchOpen = ref(false);
 const menuOpen = ref(false);
@@ -114,28 +127,24 @@ function onBlur() {
           >Home</RouterLink
         >
         <RouterLink
-          :to="{ name: 'Genre', params: { genre: 'Drama' } }"
+          v-for="genre in navGenres"
+          :key="genre"
+          :to="{ name: 'Genre', params: { genre } }"
           class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
           active-class="nav-link--active"
-          >Drama</RouterLink
-        >
-        <RouterLink
-          :to="{ name: 'Genre', params: { genre: 'Comedy' } }"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
-          active-class="nav-link--active"
-          >Comedy</RouterLink
-        >
-        <RouterLink
-          :to="{ name: 'Genre', params: { genre: 'Crime' } }"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
-          active-class="nav-link--active"
-          >Crime</RouterLink
+          >{{ genre }}</RouterLink
         >
         <RouterLink
           to="/popular"
           class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
           active-class="nav-link--active"
           >Popular</RouterLink
+        >
+        <RouterLink
+          to="/catalog"
+          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
+          active-class="nav-link--active"
+          >All Shows</RouterLink
         >
         <RouterLink
           to="/today"
@@ -290,25 +299,13 @@ function onBlur() {
         >Home</RouterLink
       >
       <RouterLink
-        :to="{ name: 'Genre', params: { genre: 'Drama' } }"
+        v-for="genre in navGenres"
+        :key="genre"
+        :to="{ name: 'Genre', params: { genre } }"
         class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
         active-class="text-white font-bold"
         @click="closeMenu"
-        >Drama</RouterLink
-      >
-      <RouterLink
-        :to="{ name: 'Genre', params: { genre: 'Comedy' } }"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        active-class="text-white font-bold"
-        @click="closeMenu"
-        >Comedy</RouterLink
-      >
-      <RouterLink
-        :to="{ name: 'Genre', params: { genre: 'Crime' } }"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        active-class="text-white font-bold"
-        @click="closeMenu"
-        >Crime</RouterLink
+        >{{ genre }}</RouterLink
       >
       <RouterLink
         to="/popular"
@@ -316,6 +313,13 @@ function onBlur() {
         active-class="text-white font-bold"
         @click="closeMenu"
         >Popular</RouterLink
+      >
+      <RouterLink
+        to="/catalog"
+        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
+        active-class="text-white font-bold"
+        @click="closeMenu"
+        >All Shows</RouterLink
       >
       <RouterLink
         to="/today"

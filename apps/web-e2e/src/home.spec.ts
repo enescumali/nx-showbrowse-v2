@@ -20,8 +20,14 @@ test.describe('Home page', () => {
 
   test('nav links are present', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Drama' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Comedy' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Popular' })).toBeVisible();
+    const nav = page.getByRole('navigation', { name: 'Main navigation' });
+    await expect(nav.getByRole('link', { name: 'Popular' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'All Shows' })).toBeVisible();
+
+    // Genre links are generated dynamically from the loaded shows rather
+    // than a fixed list, so assert on presence/count, not specific names.
+    const genreLinks = nav.locator('a[href^="/genre/"]');
+    await expect(genreLinks.first()).toBeVisible({ timeout: 10_000 });
+    expect(await genreLinks.count()).toBeGreaterThan(0);
   });
 });

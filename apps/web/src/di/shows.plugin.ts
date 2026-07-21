@@ -34,7 +34,7 @@ export const showsPlugin = {
       createGetShowsByCountryUseCase(showService);
 
     app.provide(SHOWS_USE_CASES_KEY, {
-      getShows: () => getShowsUseCase(),
+      getShows: (page) => getShowsUseCase(page),
       getShowDetail: (id) => getShowDetailUseCase(id),
       searchShows: (query) => searchShowsUseCase(query),
       getShowsByCountry: (country) => getShowsByCountryUseCase(country),

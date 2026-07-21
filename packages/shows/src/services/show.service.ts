@@ -35,8 +35,9 @@ export function createShowService(apiClient: IShowApiClient): IShowService {
   const countryCache = createCache<Show[]>();
 
   return {
-    async getShows(): Promise<Show[]> {
-      const cached = showsCache.get('shows');
+    async getShows(page = 0): Promise<Show[]> {
+      const cacheKey = `shows:${page}`;
+      const cached = showsCache.get(cacheKey);
       if (cached) return cached;
 
       // Check for ?delay param in the URL to enable
@@ -51,9 +52,9 @@ export function createShowService(apiClient: IShowApiClient): IShowService {
         }
       }
 
-      const shows = await apiClient.getShows(0);
+      const shows = await apiClient.getShows(page);
       const result = shows.map(mapShowToDomain);
-      showsCache.set('shows', result);
+      showsCache.set(cacheKey, result);
       return result;
     },
 

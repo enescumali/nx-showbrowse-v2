@@ -33,7 +33,15 @@ describe('createGetShowsUseCase', () => {
       getShows: vi.fn().mockResolvedValue([mockShow]),
     });
     const result = await createGetShowsUseCase(repo)();
-    expect(repo.getShows).toHaveBeenCalled();
+    expect(repo.getShows).toHaveBeenCalledWith(0);
     expect(result).toEqual([mockShow]);
+  });
+
+  it('passes the requested page through to the service', async () => {
+    const repo = createMockService({
+      getShows: vi.fn().mockResolvedValue([mockShow]),
+    });
+    await createGetShowsUseCase(repo)(3);
+    expect(repo.getShows).toHaveBeenCalledWith(3);
   });
 });
