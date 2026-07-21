@@ -1,0 +1,8 @@
+{
+  "name": "shows",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/shows/src",
+  "projectType": "library",
+  "tags": ["scope:shows", "type:package"],
+  "targets": {}
+}
