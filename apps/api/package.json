@@ -1,0 +1,8 @@
+{
+  "name": "@show-browse/api",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/main.ts",
+  "dependencies": {},
+  "devDependencies": {}
+}

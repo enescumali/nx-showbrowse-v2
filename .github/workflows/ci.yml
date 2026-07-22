@@ -25,11 +25,17 @@ jobs:
       - name: Lint
         run: npx nx lint web
 
+      - name: Lint (api)
+        run: npx nx lint api
+
       - name: Type-check (web app)
         run: npx tsc --noEmit -p apps/web/tsconfig.json
 
       - name: Type-check (shows package)
         run: npx tsc --noEmit -p packages/shows/tsconfig.json
+
+      - name: Type-check (api)
+        run: npx tsc --noEmit -p apps/api/tsconfig.json
 
       - name: Unit tests
         run: npx vitest run

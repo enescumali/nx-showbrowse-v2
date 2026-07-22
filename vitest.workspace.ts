@@ -17,4 +17,12 @@ export default defineWorkspace([
       root: './apps/web',
     },
   },
+  {
+    extends: 'apps/api/vite.config.ts',
+    test: {
+      name: 'api',
+      include: ['src/**/*.spec.ts'],
+      root: './apps/api',
+    },
+  },
 ]);
