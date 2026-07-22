@@ -1,6 +1,6 @@
 # ShowBrowse
 
-A Netflix-style TV show browser powered by the [TVMaze API](https://www.tvmaze.com/api).
+A Netflix-style TV show browser backed by `apps/api`, a backend-for-frontend that syncs the full [TVMaze](https://www.tvmaze.com/api) show index.
 
 Live demo: https://nx-showbrowse.vercel.app/
 
@@ -18,7 +18,13 @@ Live demo: https://nx-showbrowse.vercel.app/
 # introduced by updated dependencies
 npm ci
 
-# Run dev server → http://localhost:4200
+# apps/web now talks to apps/api instead of TVMaze directly, so both need
+# to be running for the app to actually show data. Two terminals:
+
+# Terminal 1 — backend → http://localhost:4300
+npm run start:api
+
+# Terminal 2 — frontend → http://localhost:4200
 npm start
 
 # Build for production
@@ -27,42 +33,54 @@ npm run build
 # Run all unit tests
 npm test
 
-# Run E2E tests (starts dev server automatically)
+# Run E2E tests (starts both apps/api, warm-started from a committed
+# fixture snapshot, and the Vite dev server automatically)
 npm run test:e2e
 ```
 
+On its first-ever boot (no snapshot on disk yet), `apps/api` crawls TVMaze's full index before `/genres` and `/shows` start returning data — a few minutes at its default, rate-limit-safe pace. `/health` (`http://localhost:4300/health`) reports `ready: true` once that's done; every boot after that is instant, since it warm-starts from the snapshot it wrote last time. See [Backend (`apps/api`)](#backend-appsapi) below for details.
+
 ## Features
 
-- Browse TV shows grouped by genre, each sorted by rating
-- Top-rated shows hero banner on the home screen
-- All Shows: paginated browsing of the full TVMaze catalog, with a genre filter and sort (rating, release date, or title) scoped to the currently loaded page — page, filter, and sort are all reflected in the URL so a filtered/sorted view can be shared or bookmarked
+- Browse TV shows grouped by genre, each sorted by rating — computed by `apps/api` across its *entire* synced catalog, not a single page
+- Top-rated shows hero banner on the home screen, likewise a real global top-N
+- All Shows: real paginated/filtered/sorted browsing of the full catalog — genre filter and sort (rating, release date, or title) apply across every show that matches, not just the current page. Page, filter, and sort are all reflected in the URL so a view can be shared or bookmarked
+- Genre pages paginate too — a genre can have thousands of shows, so "view all" is a real paginated grid, not a single unbounded dump
+- Popular shows ranked by rating across the whole catalog, paginated
 - Filter shows by country (today's schedule)
 - Search shows by name
 - Full show detail page with cast
-- Popular shows ranked by rating
-- Vertical and horizontal lazy loading for better UI performance,
+- Vertical and horizontal lazy loading for better UI performance
 - Optimistic detail page render for smoother experience
 
 ## Architecture
 
-The project is structured as an Nx monorepo with a strict separation between business logic and the UI layer:
+The project is structured as an Nx monorepo with a strict separation between business logic and the UI layer, now spanning three projects:
 
 ```
 packages/
   shows/    # Pure TypeScript — zero framework dependencies
-              entities, use cases, API client, mapper, service
+              entities, mappers, use cases, and two independent client/service pairs:
+              - TVMaze-facing (IShowApiClient/IShowService) — used internally by apps/api
+              - apps/api-facing (IBackendApiClient/ICatalogService) — used by apps/web
 apps/
+  api/      # Node/Express backend-for-frontend
+              crawls & serves the full TVMaze catalog (see "Backend" below)
   web/      # Vue 3 presentation layer
               components, composables, views, router, DI plugin
 ```
 
 ### Why a separate `packages` layer?
 
-The core data logic (fetching, mapping, caching) lives in `packages` (currently on has `shows`) with no Vue imports. This means it can be unit-tested without a browser, reused in a different framework, or published as an npm package without changes. The Vue app consumes it exclusively through the public API at `@show-browse/shows`.
+The core data logic (fetching, mapping, caching) lives in `packages` (currently only `shows`) with no Vue imports. This means it can be unit-tested without a browser, reused in a different framework, or published as an npm package without changes. Both `apps/web` and `apps/api` consume it exclusively through the public API at `@show-browse/shows` — `apps/api` uses the TVMaze-facing client/service for its own live proxy routes and ingestion crawl; `apps/web` uses the apps/api-facing client/service, and never talks to TVMaze directly.
+
+### Why two client/service pairs instead of one?
+
+`IShowApiClient`/`IShowService` model TVMaze's actual shape (paginated but genre-blind, no totals). `IBackendApiClient`/`ICatalogService` model what apps/api actually offers (genre-aware, globally paginated, real totals) — a structurally different capability, not just a different base URL, so it's a separate interface rather than a mutation of the first one. The three read operations that *are* identical in shape between them (`getShowById`/`searchShows`/`getShowsByCountry`) share the same use-case factories via a narrowed parameter type (`Pick<IShowService, 'getShowById'>`, etc.) instead of being duplicated.
 
 ### Why use cases instead of putting logic in composables?
 
-Use cases (`createGetShowsUseCase`, `createSearchShowsUseCase`, etc.) are plain factory functions that express a single business operation and depend only on the `IShowService` interface. This keeps the Vue composables thin — they handle reactivity and loading state, not business rules. It also makes the logic independently testable with a mock service, without mounting any component.
+Use cases (`createGetCatalogPageUseCase`, `createSearchShowsUseCase`, etc.) are plain factory functions that express a single business operation and depend only on a narrow slice of a service interface. This keeps the Vue composables thin — they handle reactivity and loading state, not business rules. It also makes the logic independently testable with a mock service, without mounting any component.
 
 ### Why `provide/inject` instead of Pinia?
 
@@ -74,18 +92,44 @@ Nx enforces hard boundaries between `packages/` and `apps/` at the linter level,
 
 ### Caching
 
-`packages/shows/src/services/show.service.ts` implements a simple in-memory TTL cache (managed in environment variables, fallbacks to 5 minutes) per data type. Each TVMaze page is now cached under its own key (`shows:0`, `shows:1`, ...), so paging back and forth on the Catalog page doesn't re-hit the network.
+Both service implementations in `packages/shows` use the same simple in-memory TTL cache shape (managed via `CACHE_TTL_MS`, fallback 5 minutes), keyed per query:
+
+- `show.service.ts` (TVMaze-facing, used by `apps/api`'s live proxy routes) — per TVMaze page (`shows:0`, `shows:1`, ...), per show id, per country.
+- `catalog.service.ts` (apps/api-facing, used by `apps/web`) — per exact `{page,pageSize,genre,sort}` query, per genre-groups `limit`, per show id, per country. Search is never cached in either — repeatedly searching the same term should reflect current results, not stale ones.
 
 ### Why "Browse by Genre" and "All Shows" are separate pages
 
-TVMaze's `/shows` index endpoint paginates 250 shows at a time, but it has no genre-aware endpoint — genre grouping only exists once shows are fetched and mapped client-side (`groupShowsByGenre`). That creates a real conflict: if a single view tried to paginate the index *and* stay grouped-by-genre-and-sorted-by-rating, every newly loaded page would reshuffle shows that are already on screen, since a higher-rated show on page 3 might belong in a genre section the user is already looking at from page 0.
+TVMaze's `/shows` index paginates but has no genre-aware endpoint and never exposes a total page count — grouping by genre and knowing "how many pages exist" both require having crawled the *entire* index first. `apps/api` does exactly that (see below), so both capabilities now exist and are correct at the same time. The two pages still exist because they serve different UX purposes, not because of a data limitation:
 
-Rather than fight that, the app splits the two concerns into two pages:
+- **Home (`/`)** shows a curated, bounded view: top-N per genre and a global top-10, both computed by `apps/api` across the whole catalog (`GET /genres?limit=20`, `GET /shows?sort=rating&pageSize=10`). This is "what's good," not "everything."
+- **All Shows (`/catalog`)**, **Genre pages (`/genre/:genre`)**, and **Popular (`/popular`)** are exhaustive, paginated views over `GET /shows`, which supports real `{page, pageSize, genre, sort}` filtering with correct `totalPages`/`totalShows` — a genre filter or sort here reflects *every* matching show in the catalog, not just what happened to be on the current page.
 
-- **Home (`/`)** groups a single bounded snapshot (TVMaze page 0) by genre and sorts each group by rating. Nothing paginates here, so nothing reshuffles — this is the page that showcases genre browsing and rating sort.
-- **All Shows (`/catalog`)** is where real pagination lives: Prev/Next (plus a direct "jump to page" input) walk the actual TVMaze index page by page. Its genre filter and rating-sort toggle are intentionally **page-local** — they only reorder/filter the shows already loaded on the current page and never trigger a refetch, so they don't reintroduce the reshuffle problem.
+Since `apps/api`'s `/shows` always returns a real `totalPages` (unlike TVMaze), `useShowCatalog` (`apps/web/src/composables/useShowCatalog.ts`) just compares against it directly for Prev/Next/boundary logic — no probing or 404-based guessing needed. A failed request (a genuine network/server error, not an expected "out of range" case) leaves the previously-loaded page on screen with an inline notice, rather than blanking the grid.
 
-TVMaze doesn't return a total page count, and per their own docs the index can have sparse gaps that 404 on an otherwise valid page number. `useShowCatalog` (`apps/web/src/composables/useShowCatalog.ts`) handles this by tracking the last *attempted* page separately from the last *successfully loaded* one: Next/Prev always advance the attempt cursor, but the displayed shows only update on success. A failed page shows an inline notice without blanking the grid, and clicking Next again continues walking forward instead of retrying the same failing page.
+## Backend (`apps/api`)
+
+A small backend-for-frontend that periodically crawls TVMaze's **full** show index into memory, so genre-grouping, global sorting, and real pagination can all be correct **at the same time** — `apps/web` consumes it exclusively and never talks to TVMaze directly for the bulk catalog.
+
+**How it works:**
+
+- On boot, it loads a JSON snapshot from disk (if one exists) for an instant warm start, then serves immediately — `/health` always returns 200 so it never looks "down" during a crawl, while `/genres`, `/genres/names`, and `/shows` return 503 until the store is populated.
+- If there's no snapshot (first-ever boot), it crawls TVMaze's index from page 0, rate-limited under TVMaze's documented ~20 calls/10s per IP, backing off and retrying on 429.
+- A daily cron job (default `0 3 * * *`) then keeps it fresh incrementally: per TVMaze's own docs, it resumes from `floor(highestKnownShowId / 250)` instead of re-crawling everything, merging new/updated shows into the existing set.
+- Every successful crawl atomically swaps the in-memory store (`apps/api/src/store/show-store.ts`) and writes a new JSON snapshot (write-to-temp-file-then-rename, so a crash mid-write can't corrupt it) — a failed crawl never touches what's currently being served.
+- `GET /genres?limit=` returns each genre's top-N shows by rating (default 20) — deliberately bounded, since a genre can have tens of thousands of shows and Home only ever needs a curated row. `GET /genres/names` returns just `{genre, count}[]`, no show payloads, for NavBar's nav links.
+- `GET /shows?page=&pageSize=&genre=&sort=` is the one exhaustive, paginated endpoint — global filter + sort + pagination with correct totals, backing Catalog, Genre, and Popular.
+- `GET /shows/:id`, `GET /search`, and `GET /schedule/:country` are **not** bulk-crawled (embedding cast info for ~89k shows would blow the rate limit for no benefit) — they proxy live to TVMaze, reusing the exact same tested TVMaze-facing `IShowService`/`createShowApiClient` from `packages/shows`.
+- `POST /admin/refresh` (guarded by an `X-Admin-Token` header) triggers a sync on demand instead of waiting for the daily schedule — useful for local testing/demoing.
+- A small permissive CORS middleware (`apps/api/src/middleware/cors.ts`) lets the browser-based `apps/web` call across origins/ports — no cookies/credentials are involved, so this is deliberately simple rather than pulling in the `cors` package.
+
+**Why a JSON snapshot instead of a database:** no database, no schema, no external account a reviewer would need to run this locally — `npm ci` + the two `npm start*` commands below still fully reproduce it. TVMaze itself caches the show index server-side for 24h, so a database's query capabilities aren't buying anything a flat in-memory array plus a disk backup doesn't already cover at this scale.
+
+**Running it:**
+
+```bash
+cd apps/api && cp .env.example .env   # optional — sane defaults exist without this
+npm run start:api                     # → http://localhost:4300
+```
 
 ## Tech Stack
 
@@ -97,23 +141,28 @@ TVMaze doesn't return a total page count, and per their own docs the index can h
 **Vitest**  
 **Playwright**
 **Tailwind CSS v4**
+**Express** (apps/api)
+**node-cron** (apps/api)
 
 ## Testing
 
 ### Unit tests
 
-Co-located with source files (`foo.ts` → `foo.spec.ts`). `packages/shows` tests run in Node; `apps/web` tests use jsdom via `@vue/test-utils`. The service interface (`IShowService`) is mocked — no HTTP calls.
+Co-located with source files (`foo.ts` → `foo.spec.ts`). `packages/shows` and `apps/api` tests run in Node; `apps/web` tests use jsdom via `@vue/test-utils`. The service interface (`IShowService`) is mocked — no HTTP calls; `apps/api`'s route handlers are tested as plain functions against mock req/res objects (no `supertest`), and its crawl/backoff/persistence logic uses fake timers and real temp-dir file I/O rather than mocking the filesystem.
 
 ```bash
-npm test                           # all unit tests
+npm test                           # all unit tests, including apps/api
 npm test packages/shows/src        # shows package only
 npm test apps/web/src/composables  # composables only
 npm test apps/web/src/components   # components only
+npm test apps/api/src              # backend service only
 ```
 
 ### E2E tests
 
-Playwright tests in `apps/web-e2e/src/` spin up the Vite dev server automatically. They cover home navigation, search (URL params), show detail, popular page, genre filtering, and country filtering.
+Playwright's `webServer` config (`apps/web-e2e/playwright.config.ts`) boots **two** processes: the Vite dev server, and a dedicated `apps/api` instance warm-started from a committed, deterministic fixture (`apps/web-e2e/fixtures/shows-snapshot.json` — 600 shows across 4 genres, generated by `generate-snapshot.ts`) instead of crawling live TVMaze. This keeps catalog/genre/pagination assertions exact (known totals, known rating/title order) and fast, and the apps/api instance is never reused from an already-running dev server, so a stray manual instance with real crawled data can't silently make a test run non-deterministic.
+
+Tests cover home navigation, search (URL params), show detail, catalog pagination/filtering/sorting, genre-page pagination and cross-genre navigation, popular-list pagination, and country filtering. `/shows/:id`, `/search`, and `/schedule/:country` still hit live TVMaze (they're proxied, not bulk-crawled), same as before.
 
 ```bash
 npm run test:e2e          # headless
@@ -147,8 +196,10 @@ This will install exactly what is in the lock file, guaranteeing reproducible bu
 
 ## Known limitations
 
-- "Browse by Genre" on Home is scoped to a single TVMaze page (250 shows), not the entire catalog — see [Why "Browse by Genre" and "All Shows" are separate pages](#why-browse-by-genre-and-all-shows-are-separate-pages) for the reasoning.
-- The genre filter and sort options on the All Shows page apply only to the currently loaded page, not the full catalog, for the same reason. A shared link that includes `?genre=` may show no results if the linked page's content has changed by the time it's opened — the filter resets to "All genres" automatically in that case rather than showing a blank state silently.
+- `apps/api`'s incremental sync only walks forward from the highest known show id, so a show delisted from TVMaze's index would linger in the snapshot indefinitely rather than being pruned. Low-probability in practice, not handled.
+- A shared Catalog link that includes `?genre=` may show no results if the linked genre no longer matches anything by the time it's opened — the filter resets to "All genres" automatically in that case rather than showing a blank state silently.
+- `apps/web` has a hard runtime dependency on `apps/api` now — there's no fallback to TVMaze-direct if the backend is unreachable; the existing loading/error/retry UI just surfaces a connection error.
+- Search and the country schedule are still live TVMaze proxies (through `apps/api`), not backed by the synced catalog — by design, since TVMaze's fuzzy search and daily schedule aren't things worth reimplementing or bulk-crawling (see the [Backend](#backend-appsapi) section).
 
 ## Possible improvement points
 
@@ -156,3 +207,5 @@ This will install exactly what is in the lock file, guaranteeing reproducible bu
 2. Global logging/monitoring integration (eg. Datadog)
 3. MSW implementation to use mock data in both tests and development process to become independent from possible expected backend changes
 4. Faker implementation to generate dynamic/realistic data for testing (minor)
+5. Deploy `apps/api` somewhere persistent (currently only `apps/web` is deployed via Vercel) and point production's `VITE_API_BASE_URL` at it — needed before the live demo link reflects this backend-backed architecture
+6. Prune delisted shows during incremental sync (see Known limitations)
