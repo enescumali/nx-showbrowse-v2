@@ -5,7 +5,9 @@ import type { GenreGroup } from '../api/backend-api-client.interface';
 describe('createGetGenreGroupsUseCase', () => {
   it('delegates to the catalog service with the given limit', async () => {
     const groups: GenreGroup[] = [{ genre: 'Drama', shows: [] }];
-    const catalogService = { getGenreGroups: vi.fn().mockResolvedValue(groups) };
+    const catalogService = {
+      getGenreGroups: vi.fn().mockResolvedValue(groups),
+    };
 
     const result = await createGetGenreGroupsUseCase(catalogService)(20);
 

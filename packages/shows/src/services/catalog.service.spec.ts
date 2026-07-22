@@ -21,9 +21,13 @@ function createMockApiClient(
   overrides: Partial<IBackendApiClient> = {},
 ): IBackendApiClient {
   return {
-    getCatalogPage: vi
-      .fn()
-      .mockResolvedValue({ shows: [], page: 0, pageSize: 250, totalShows: 0, totalPages: 0 }),
+    getCatalogPage: vi.fn().mockResolvedValue({
+      shows: [],
+      page: 0,
+      pageSize: 250,
+      totalShows: 0,
+      totalPages: 0,
+    }),
     getGenreGroups: vi.fn().mockResolvedValue([]),
     getGenreNames: vi.fn().mockResolvedValue([]),
     getShowById: vi.fn(),
@@ -37,9 +41,23 @@ describe('createCatalogService', () => {
   it('caches getCatalogPage results per distinct query', async () => {
     const getCatalogPage = vi
       .fn()
-      .mockResolvedValueOnce({ shows: [makeShow(1)], page: 0, pageSize: 250, totalShows: 1, totalPages: 1 })
-      .mockResolvedValueOnce({ shows: [makeShow(2)], page: 1, pageSize: 250, totalShows: 1, totalPages: 1 });
-    const service = createCatalogService(createMockApiClient({ getCatalogPage }));
+      .mockResolvedValueOnce({
+        shows: [makeShow(1)],
+        page: 0,
+        pageSize: 250,
+        totalShows: 1,
+        totalPages: 1,
+      })
+      .mockResolvedValueOnce({
+        shows: [makeShow(2)],
+        page: 1,
+        pageSize: 250,
+        totalShows: 1,
+        totalPages: 1,
+      });
+    const service = createCatalogService(
+      createMockApiClient({ getCatalogPage }),
+    );
 
     const page0First = await service.getCatalogPage({ page: 0 });
     const page1 = await service.getCatalogPage({ page: 1 });
@@ -55,8 +73,12 @@ describe('createCatalogService', () => {
     const getGenreGroups = vi
       .fn()
       .mockResolvedValueOnce([{ genre: 'Drama', shows: [makeShow(1)] }])
-      .mockResolvedValueOnce([{ genre: 'Drama', shows: [makeShow(1), makeShow(2)] }]);
-    const service = createCatalogService(createMockApiClient({ getGenreGroups }));
+      .mockResolvedValueOnce([
+        { genre: 'Drama', shows: [makeShow(1), makeShow(2)] },
+      ]);
+    const service = createCatalogService(
+      createMockApiClient({ getGenreGroups }),
+    );
 
     await service.getGenreGroups(5);
     await service.getGenreGroups(10);
@@ -69,7 +91,9 @@ describe('createCatalogService', () => {
     const getGenreNames = vi
       .fn()
       .mockResolvedValue([{ genre: 'Drama', count: 10 }]);
-    const service = createCatalogService(createMockApiClient({ getGenreNames }));
+    const service = createCatalogService(
+      createMockApiClient({ getGenreNames }),
+    );
 
     await service.getGenreNames();
     await service.getGenreNames();
@@ -101,7 +125,9 @@ describe('createCatalogService', () => {
 
   it('caches getShowsByCountry per country', async () => {
     const getShowsByCountry = vi.fn().mockResolvedValue([makeShow(1)]);
-    const service = createCatalogService(createMockApiClient({ getShowsByCountry }));
+    const service = createCatalogService(
+      createMockApiClient({ getShowsByCountry }),
+    );
 
     await service.getShowsByCountry('US');
     await service.getShowsByCountry('US');
