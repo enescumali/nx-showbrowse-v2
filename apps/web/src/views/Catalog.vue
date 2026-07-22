@@ -1,44 +1,54 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowCatalog } from '../composables/useShowCatalog';
+import { useGenreNames } from '../composables/useGenreNames';
 import ShowThumbnailGrid from '../components/ShowThumbnailGrid.vue';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
+import type { CatalogSort } from '@show-browse/shows';
 
 const route = useRoute();
 const router = useRouter();
 
-const SORT_OPTIONS = ['none', 'rating', 'date', 'title'] as const;
-type SortOption = (typeof SORT_OPTIONS)[number];
-function toSortOption(value: unknown): SortOption {
-  return SORT_OPTIONS.includes(value as SortOption)
-    ? (value as SortOption)
-    : 'none';
+function toSort(value: unknown): CatalogSort | '' {
+  return value === 'rating' || value === 'date' || value === 'title'
+    ? value
+    : '';
 }
 
-const initialPage = Number(route.query.page) || 0;
-const { shows, page, loading, error, nextPage, prevPage, goToPage, reload } =
-  useShowCatalog(initialPage);
+const {
+  shows,
+  page,
+  totalShows,
+  totalPages,
+  genre,
+  sort,
+  loading,
+  error,
+  nextPage,
+  prevPage,
+  goToPage,
+  reload,
+} = useShowCatalog({
+  initialPage: Number(route.query.page) || 0,
+  genre: typeof route.query.genre === 'string' ? route.query.genre : '',
+  sort: toSort(route.query.sort) || undefined,
+});
+
+const { genreNames } = useGenreNames();
 
 onMounted(() => {
   document.title = 'All Shows — ShowBrowse';
 });
 
-// Genre filter and sort are intentionally page-local: they only ever
-// reorder/filter the shows already loaded on the current page, never
-// trigger a refetch. Grouping by genre needs the full catalog to be known
-// up front, which pagination can't give us without reshuffling content the
-// user is already looking at — see README for the full rationale.
-const selectedGenre = ref((route.query.genre as string) ?? '');
-const sortOption = ref<SortOption>(toSortOption(route.query.sort));
-
 // Keep the URL in sync with page/genre/sort (deep links, back/forward,
-// shareable filtered/sorted views)
-watch([page, selectedGenre, sortOption], () => {
+// shareable filtered/sorted views) — genre/sort now trigger a real,
+// global refetch via useShowCatalog, not a local re-render.
+watch([page, genre, sort], () => {
   const query: Record<string, string> = {};
   if (page.value) query.page = String(page.value);
-  if (selectedGenre.value) query.genre = selectedGenre.value;
-  if (sortOption.value !== 'none') query.sort = sortOption.value;
+  if (genre.value) query.genre = genre.value;
+  if (sort.value) query.sort = sort.value;
   router.replace({ query });
 });
 
@@ -49,10 +59,10 @@ watch(
     if (targetPage !== page.value) goToPage(targetPage);
 
     const targetGenre = typeof q.genre === 'string' ? q.genre : '';
-    if (targetGenre !== selectedGenre.value) selectedGenre.value = targetGenre;
+    if (targetGenre !== genre.value) genre.value = targetGenre;
 
-    const targetSort = toSortOption(q.sort);
-    if (targetSort !== sortOption.value) sortOption.value = targetSort;
+    const targetSort = toSort(q.sort);
+    if (targetSort !== sort.value) sort.value = targetSort;
   },
 );
 
@@ -63,42 +73,6 @@ function submitJump() {
   goToPage(Math.floor(target));
   jumpInput.value = '';
 }
-
-const availableGenres = computed(() => {
-  const set = new Set<string>();
-  for (const show of shows.value) {
-    for (const genre of show.genres) set.add(genre);
-  }
-  return [...set].sort((a, b) => a.localeCompare(b));
-});
-
-watch(shows, () => {
-  if (
-    selectedGenre.value &&
-    !availableGenres.value.includes(selectedGenre.value)
-  ) {
-    selectedGenre.value = '';
-  }
-});
-
-const visibleShows = computed(() => {
-  let result = shows.value;
-  if (selectedGenre.value) {
-    result = result.filter((s) => s.genres.includes(selectedGenre.value));
-  }
-  switch (sortOption.value) {
-    case 'rating':
-      return [...result].sort((a, b) => b.rating - a.rating);
-    case 'date':
-      return [...result].sort((a, b) =>
-        b.releaseDate.localeCompare(a.releaseDate),
-      );
-    case 'title':
-      return [...result].sort((a, b) => a.title.localeCompare(b.title));
-    default:
-      return result;
-  }
-});
 </script>
 
 <template>
@@ -106,7 +80,8 @@ const visibleShows = computed(() => {
     <header class="mb-6">
       <h1 class="text-3xl font-bold text-[#e5e5e5] m-0">All Shows</h1>
       <p class="text-[#999] text-sm mt-1">
-        Browse the full TVMaze catalog, one page at a time.
+        Browse the full TVMaze catalog, filtered and sorted across the
+        entire dataset.
       </p>
     </header>
 
@@ -116,16 +91,16 @@ const visibleShows = computed(() => {
       <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
         Genre
         <select
-          v-model="selectedGenre"
+          v-model="genre"
           class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
         >
           <option value="">All genres</option>
           <option
-            v-for="genre in availableGenres"
-            :key="genre"
-            :value="genre"
+            v-for="g in genreNames"
+            :key="g.genre"
+            :value="g.genre"
           >
-            {{ genre }}
+            {{ g.genre }} ({{ g.count }})
           </option>
         </select>
       </label>
@@ -133,20 +108,15 @@ const visibleShows = computed(() => {
       <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
         Sort by
         <select
-          v-model="sortOption"
+          v-model="sort"
           class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
         >
-          <option value="none">Default order</option>
+          <option value="">Default order</option>
           <option value="rating">Rating (high to low)</option>
           <option value="date">Release date (newest first)</option>
           <option value="title">Title (A–Z)</option>
         </select>
       </label>
-
-      <p class="text-xs text-[#777] ml-auto">
-        Genre filter and sort apply only to the shows currently loaded on
-        this page.
-      </p>
     </div>
 
     <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -160,17 +130,21 @@ const visibleShows = computed(() => {
         >
           ‹ Prev
         </button>
-        <span class="text-sm text-[#b3b3b3] min-w-40" role="status" aria-live="polite">
+        <span
+          class="text-sm text-[#b3b3b3] min-w-56"
+          role="status"
+          aria-live="polite"
+        >
           <template v-if="loading">Loading…</template>
           <template v-else
-            >Page {{ page + 1 }} — {{ visibleShows.length }} shows
-            shown</template
+            >Page {{ page + 1 }} of {{ totalPages }} —
+            {{ totalShows.toLocaleString() }} shows total</template
           >
         </span>
         <button
           type="button"
           class="px-3 py-1.5 rounded border border-[#333] text-sm text-[#e5e5e5] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#E50914] transition-colors"
-          :disabled="loading"
+          :disabled="page >= totalPages - 1 || loading"
           aria-label="Next page"
           @click="nextPage"
         >
@@ -243,12 +217,12 @@ const visibleShows = computed(() => {
       </div>
 
       <div
-        v-if="visibleShows.length === 0"
+        v-if="shows.length === 0"
         class="text-center py-12 text-[#999] text-lg"
       >
-        No shows match the selected genre on this page.
+        No shows found for the selected genre.
       </div>
-      <ShowThumbnailGrid v-else :shows="visibleShows" />
+      <ShowThumbnailGrid v-else :shows="shows" />
     </template>
   </main>
 </template>

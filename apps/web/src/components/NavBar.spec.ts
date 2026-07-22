@@ -13,8 +13,8 @@ const router = createRouter({
   routes,
 });
 
-// NavBar derives its genre links from useShows(), so every mount needs the
-// ShowsUseCases DI key provided, same as the composable tests.
+// NavBar derives its genre links from useGenreNames(), so every mount needs
+// the ShowsUseCases DI key provided, same as the composable tests.
 const provide = { [SHOWS_USE_CASES_KEY as symbol]: makeUseCases() };
 
 describe('NavBar', () => {

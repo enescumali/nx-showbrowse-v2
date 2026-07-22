@@ -5,77 +5,112 @@ import { useShowCatalog } from './useShowCatalog';
 import { makeUseCases } from '../test-utils/makeUseCases';
 import { mountComposable } from '../test-utils/mountComposable';
 import { makeShow } from '../test-utils/makeShow';
+import type { CatalogPage, Show } from '@show-browse/shows';
 
-const page0Show = makeShow({ id: 1, title: 'Page 0 Show', genres: ['Drama'] });
-const page1Show = makeShow({ id: 2, title: 'Page 1 Show', genres: ['Comedy'] });
+function page(
+  shows: Show[],
+  pageNum: number,
+  totalPages: number,
+  totalShows = shows.length,
+): CatalogPage {
+  return { shows, page: pageNum, pageSize: 250, totalShows, totalPages };
+}
 
 describe('useShowCatalog', () => {
   it('loads page 0 on mount', async () => {
-    const useCases = makeUseCases({
-      getShows: vi.fn().mockResolvedValue([page0Show]),
+    const show1 = makeShow({ id: 1, genres: ['Drama'] });
+    const getCatalogPage = vi.fn().mockResolvedValue(page([show1], 0, 3, 500));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const {
+      shows,
+      page: pageRef,
+      totalPages,
+      totalShows,
+    } = mountComposable(useShowCatalog, useCases);
+    await flushPromises();
+
+    expect(getCatalogPage).toHaveBeenCalledWith({
+      page: 0,
+      pageSize: undefined,
+      genre: undefined,
+      sort: undefined,
     });
-
-    const { shows, page } = mountComposable(useShowCatalog, useCases);
-    await flushPromises();
-
-    expect(useCases.getShows).toHaveBeenCalledWith(0);
-    expect(shows.value).toEqual([page0Show]);
-    expect(page.value).toBe(0);
+    expect(shows.value).toEqual([show1]);
+    expect(pageRef.value).toBe(0);
+    expect(totalPages.value).toBe(3);
+    expect(totalShows.value).toBe(500);
   });
 
-  it('nextPage fetches the following page', async () => {
-    const getShows = vi
-      .fn()
-      .mockResolvedValueOnce([page0Show])
-      .mockResolvedValueOnce([page1Show]);
-    const useCases = makeUseCases({ getShows });
+  it('seeds genre/sort/pageSize/initialPage from options', async () => {
+    const getCatalogPage = vi.fn().mockResolvedValue(page([], 2, 5));
+    const useCases = makeUseCases({ getCatalogPage });
 
-    const { shows, page, nextPage } = mountComposable(
-      useShowCatalog,
-      useCases,
-    );
+    mountComposable(useShowCatalog, useCases, {
+      genre: 'Drama',
+      sort: 'rating',
+      pageSize: 24,
+      initialPage: 2,
+    });
     await flushPromises();
 
-    nextPage();
-    await flushPromises();
-
-    expect(getShows).toHaveBeenCalledWith(1);
-    expect(shows.value).toEqual([page1Show]);
-    expect(page.value).toBe(1);
+    expect(getCatalogPage).toHaveBeenCalledWith({
+      page: 2,
+      pageSize: 24,
+      genre: 'Drama',
+      sort: 'rating',
+    });
   });
 
-  it('keeps the last successful page visible when a page fails to load, and continues forward on retry', async () => {
-    const getShows = vi
+  it('tracks the server-confirmed pageSize (for rank/position math in views)', async () => {
+    const getCatalogPage = vi
       .fn()
-      .mockResolvedValueOnce([page0Show]) // initial load: page 0
-      .mockRejectedValueOnce(new Error('[404] Not Found')) // nextPage: page 1 fails
-      .mockResolvedValueOnce([page1Show]); // nextPage again: page 2 succeeds
-    const useCases = makeUseCases({ getShows });
+      .mockResolvedValue({ shows: [], page: 0, pageSize: 100, totalShows: 3, totalPages: 1 });
+    const useCases = makeUseCases({ getCatalogPage });
 
-    const { shows, page, error, nextPage } = mountComposable(
-      useShowCatalog,
-      useCases,
-    );
+    const { pageSize } = mountComposable(useShowCatalog, useCases, {
+      pageSize: 100,
+    });
     await flushPromises();
+
+    expect(pageSize.value).toBe(100);
+  });
+
+  it('nextPage/prevPage are bounded by totalPages, no probing needed', async () => {
+    const getCatalogPage = vi
+      .fn()
+      .mockResolvedValueOnce(page([], 0, 2))
+      .mockResolvedValueOnce(page([], 1, 2))
+      .mockResolvedValueOnce(page([], 0, 2));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const {
+      page: pageRef,
+      nextPage,
+      prevPage,
+      totalPages,
+    } = mountComposable(useShowCatalog, useCases);
+    await flushPromises();
+    expect(totalPages.value).toBe(2);
 
     nextPage();
     await flushPromises();
+    expect(pageRef.value).toBe(1);
+    expect(getCatalogPage).toHaveBeenCalledTimes(2);
 
-    expect(shows.value).toEqual([page0Show]);
-    expect(page.value).toBe(0);
-    expect(error.value).toBe('[404] Not Found');
-
+    // Already on the last page — no-op, no extra request.
     nextPage();
     await flushPromises();
+    expect(getCatalogPage).toHaveBeenCalledTimes(2);
 
-    expect(getShows).toHaveBeenNthCalledWith(3, 2);
-    expect(shows.value).toEqual([page1Show]);
-    expect(page.value).toBe(2);
+    prevPage();
+    await flushPromises();
+    expect(getCatalogPage).toHaveBeenCalledTimes(3);
   });
 
   it('prevPage is a no-op at page 0', async () => {
-    const getShows = vi.fn().mockResolvedValue([page0Show]);
-    const useCases = makeUseCases({ getShows });
+    const getCatalogPage = vi.fn().mockResolvedValue(page([], 0, 1));
+    const useCases = makeUseCases({ getCatalogPage });
 
     const { prevPage } = mountComposable(useShowCatalog, useCases);
     await flushPromises();
@@ -83,17 +118,14 @@ describe('useShowCatalog', () => {
     prevPage();
     await flushPromises();
 
-    expect(getShows).toHaveBeenCalledTimes(1);
+    expect(getCatalogPage).toHaveBeenCalledTimes(1);
   });
 
   it('goToPage jumps directly to the requested page', async () => {
-    const getShows = vi
-      .fn()
-      .mockResolvedValueOnce([page0Show])
-      .mockResolvedValueOnce([page1Show]);
-    const useCases = makeUseCases({ getShows });
+    const getCatalogPage = vi.fn().mockResolvedValue(page([], 7, 20));
+    const useCases = makeUseCases({ getCatalogPage });
 
-    const { shows, page, goToPage } = mountComposable(
+    const { goToPage, page: pageRef } = mountComposable(
       useShowCatalog,
       useCases,
     );
@@ -102,8 +134,105 @@ describe('useShowCatalog', () => {
     goToPage(7);
     await flushPromises();
 
-    expect(getShows).toHaveBeenCalledWith(7);
-    expect(shows.value).toEqual([page1Show]);
-    expect(page.value).toBe(7);
+    expect(getCatalogPage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ page: 7 }),
+    );
+    expect(pageRef.value).toBe(7);
+  });
+
+  it('changing genre resets to page 0 and refetches with the new filter', async () => {
+    const getCatalogPage = vi
+      .fn()
+      .mockResolvedValueOnce(page([], 0, 5))
+      .mockResolvedValueOnce(page([], 3, 5))
+      .mockResolvedValueOnce(page([], 0, 2));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const { goToPage, genre, page: pageRef } = mountComposable(
+      useShowCatalog,
+      useCases,
+    );
+    await flushPromises();
+
+    goToPage(3);
+    await flushPromises();
+    expect(pageRef.value).toBe(3);
+
+    genre.value = 'Drama';
+    await flushPromises();
+
+    expect(pageRef.value).toBe(0);
+    expect(getCatalogPage).toHaveBeenLastCalledWith({
+      page: 0,
+      pageSize: undefined,
+      genre: 'Drama',
+      sort: undefined,
+    });
+  });
+
+  it('changing sort resets to page 0 and refetches', async () => {
+    const getCatalogPage = vi
+      .fn()
+      .mockResolvedValueOnce(page([], 0, 5))
+      .mockResolvedValueOnce(page([], 2, 5))
+      .mockResolvedValueOnce(page([], 0, 5));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const { goToPage, sort, page: pageRef } = mountComposable(
+      useShowCatalog,
+      useCases,
+    );
+    await flushPromises();
+
+    goToPage(2);
+    await flushPromises();
+
+    sort.value = 'title';
+    await flushPromises();
+
+    expect(pageRef.value).toBe(0);
+    expect(getCatalogPage).toHaveBeenLastCalledWith({
+      page: 0,
+      pageSize: undefined,
+      genre: undefined,
+      sort: 'title',
+    });
+  });
+
+  it('keeps the last successful page visible when a later request fails', async () => {
+    const show1 = makeShow({ id: 1, genres: ['Drama'] });
+    const getCatalogPage = vi
+      .fn()
+      .mockResolvedValueOnce(page([show1], 0, 2))
+      .mockRejectedValueOnce(new Error('network down'));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const {
+      shows,
+      page: pageRef,
+      error,
+      nextPage,
+    } = mountComposable(useShowCatalog, useCases);
+    await flushPromises();
+
+    nextPage();
+    await flushPromises();
+
+    expect(shows.value).toEqual([show1]);
+    expect(pageRef.value).toBe(0);
+    expect(error.value).toBe('network down');
+  });
+
+  it('reload() re-requests the current page', async () => {
+    const getCatalogPage = vi.fn().mockResolvedValue(page([], 0, 1));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const { reload } = mountComposable(useShowCatalog, useCases);
+    await flushPromises();
+
+    reload();
+    await flushPromises();
+
+    expect(getCatalogPage).toHaveBeenCalledTimes(2);
   });
 });

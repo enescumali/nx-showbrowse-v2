@@ -1,9 +1,18 @@
 import type { InjectionKey } from 'vue';
 import { inject } from 'vue';
-import type { Show, ShowDetail } from '@show-browse/shows';
+import type {
+  Show,
+  ShowDetail,
+  CatalogQuery,
+  CatalogPage,
+  GenreGroup,
+  GenreSummary,
+} from '@show-browse/shows';
 
 export interface ShowsUseCases {
-  getShows(page?: number): Promise<Show[]>;
+  getCatalogPage(query: CatalogQuery): Promise<CatalogPage>;
+  getGenreGroups(limit?: number): Promise<GenreGroup[]>;
+  getGenreNames(): Promise<GenreSummary[]>;
   getShowDetail(id: string | number): Promise<ShowDetail>;
   searchShows(query: string): Promise<Show[]>;
   getShowsByCountry(country: string): Promise<Show[]>;

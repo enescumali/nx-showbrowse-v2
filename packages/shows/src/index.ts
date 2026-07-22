@@ -34,7 +34,6 @@ export {
 } from './mappers/show.mapper';
 
 // Use case factories
-export { createGetShowsUseCase } from './use-cases/get-shows.use-case';
 export { createGetShowDetailUseCase } from './use-cases/get-show-detail.use-case';
 export { createSearchShowsUseCase } from './use-cases/search-shows.use-case';
 export { createGetShowsByCountryUseCase } from './use-cases/get-shows-by-country.use-case';
@@ -43,7 +42,6 @@ export { createGetGenreGroupsUseCase } from './use-cases/get-genre-groups.use-ca
 export { createGetGenreNamesUseCase } from './use-cases/get-genre-names.use-case';
 
 // Use case types
-export type { GetShowsUseCase } from './use-cases/get-shows.use-case';
 export type { GetShowDetailUseCase } from './use-cases/get-show-detail.use-case';
 export type { SearchShowsUseCase } from './use-cases/search-shows.use-case';
 export type { GetShowsByCountryUseCase } from './use-cases/get-shows-by-country.use-case';

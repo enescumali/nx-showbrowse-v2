@@ -1,8 +1,10 @@
 import type { App } from 'vue';
 import {
-  createShowApiClient,
-  createShowService,
-  createGetShowsUseCase,
+  createBackendApiClient,
+  createCatalogService,
+  createGetCatalogPageUseCase,
+  createGetGenreGroupsUseCase,
+  createGetGenreNamesUseCase,
   createGetShowDetailUseCase,
   createSearchShowsUseCase,
   createGetShowsByCountryUseCase,
@@ -10,7 +12,7 @@ import {
 import { SHOWS_USE_CASES_KEY } from './injection-keys';
 
 function getBaseUrl(): string {
-  // make sure it from env
+  // Points at apps/api (our backend-for-frontend), not TVMaze directly.
   const url = import.meta.env.VITE_API_BASE_URL;
 
   if (!url) {
@@ -24,17 +26,21 @@ function getBaseUrl(): string {
 
 export const showsPlugin = {
   install(app: App): void {
-    const apiClient = createShowApiClient(getBaseUrl());
-    const showService = createShowService(apiClient);
+    const apiClient = createBackendApiClient(getBaseUrl());
+    const catalogService = createCatalogService(apiClient);
 
-    const getShowsUseCase = createGetShowsUseCase(showService);
-    const getShowDetailUseCase = createGetShowDetailUseCase(showService);
-    const searchShowsUseCase = createSearchShowsUseCase(showService);
+    const getCatalogPageUseCase = createGetCatalogPageUseCase(catalogService);
+    const getGenreGroupsUseCase = createGetGenreGroupsUseCase(catalogService);
+    const getGenreNamesUseCase = createGetGenreNamesUseCase(catalogService);
+    const getShowDetailUseCase = createGetShowDetailUseCase(catalogService);
+    const searchShowsUseCase = createSearchShowsUseCase(catalogService);
     const getShowsByCountryUseCase =
-      createGetShowsByCountryUseCase(showService);
+      createGetShowsByCountryUseCase(catalogService);
 
     app.provide(SHOWS_USE_CASES_KEY, {
-      getShows: (page) => getShowsUseCase(page),
+      getCatalogPage: (query) => getCatalogPageUseCase(query),
+      getGenreGroups: (limit) => getGenreGroupsUseCase(limit),
+      getGenreNames: () => getGenreNamesUseCase(),
       getShowDetail: (id) => getShowDetailUseCase(id),
       searchShows: (query) => searchShowsUseCase(query),
       getShowsByCountry: (country) => getShowsByCountryUseCase(country),

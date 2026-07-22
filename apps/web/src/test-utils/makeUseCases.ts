@@ -21,7 +21,11 @@ export function makeUseCases(
   overrides: Partial<ShowsUseCases> = {},
 ): ShowsUseCases {
   return {
-    getShows: vi.fn().mockResolvedValue([]),
+    getCatalogPage: vi
+      .fn()
+      .mockResolvedValue({ shows: [], page: 0, pageSize: 250, totalShows: 0, totalPages: 0 }),
+    getGenreGroups: vi.fn().mockResolvedValue([]),
+    getGenreNames: vi.fn().mockResolvedValue([]),
     getShowDetail: vi.fn().mockResolvedValue(mockDetail),
     searchShows: vi.fn().mockResolvedValue([]),
     getShowsByCountry: vi.fn().mockResolvedValue([]),

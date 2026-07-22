@@ -1,34 +1,47 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useShows } from '../composables/useShows';
 import { useShowSearch } from '../composables/useShowSearch';
-import { useGenreGroups } from '../composables/useGenreGroups';
+import { useGenreCarousels } from '../composables/useGenreCarousels';
+import { useTopRatedShows } from '../composables/useTopRatedShows';
 import HeroBanner from '../components/HeroBanner.vue';
 import ShowCarousel from '../components/ShowCarousel.vue';
 import ShowThumbnailGrid from '../components/ShowThumbnailGrid.vue';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
 
 const route = useRoute();
-const { shows, loading, error, reload } = useShows();
 
 onMounted(() => {
   document.title = 'ShowBrowse — Home';
 });
 
 const { searchResults, searchLoading, searchError, search } = useShowSearch();
-const { genreGroups } = useGenreGroups(shows);
 
-const top10 = computed(() =>
-  [...shows.value]
-    .filter((m) => m.rating > 0)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 10),
-);
+// Real, globally-computed data from apps/api — not a client-side slice of
+// a single bounded TVMaze page.
+const {
+  genreGroups,
+  loading: genresLoading,
+  error: genresError,
+  reload: reloadGenres,
+} = useGenreCarousels(20);
+const {
+  shows: topRated,
+  loading: topRatedLoading,
+  error: topRatedError,
+  reload: reloadTopRated,
+} = useTopRatedShows(10);
+
+const loading = computed(() => genresLoading.value || topRatedLoading.value);
+const error = computed(() => genresError.value || topRatedError.value);
+function reload() {
+  reloadGenres();
+  reloadTopRated();
+}
 
 const featuredShow = computed(() => {
-  if (!top10.value.length) return null;
-  return top10.value[Math.floor(Math.random() * top10.value.length)];
+  if (!topRated.value.length) return null;
+  return topRated.value[Math.floor(Math.random() * topRated.value.length)];
 });
 
 const searchQuery = computed(() => (route.query.q as string) ?? '');
@@ -113,13 +126,13 @@ watch(searchQuery, (q) => search(q), { immediate: true });
         <HeroBanner v-if="featuredShow" :show="featuredShow" />
 
         <ShowCarousel
-          v-if="top10.length > 0"
+          v-if="topRated.length > 0"
           genre="⭐ Top 10 by Rating"
-          :shows="top10"
+          :shows="topRated"
         />
 
         <ShowCarousel
-          v-for="[genre, shows] in genreGroups"
+          v-for="{ genre, shows } in genreGroups"
           :key="genre"
           :genre="genre"
           :shows="shows"

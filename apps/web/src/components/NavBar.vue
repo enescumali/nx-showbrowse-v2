@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, nextTick, watch } from 'vue';
 import { RouterLink, useRouter, useRoute } from 'vue-router';
-import { useShows } from '../composables/useShows';
-import { useGenreGroups } from '../composables/useGenreGroups';
+import { useGenreNames } from '../composables/useGenreNames';
 
 const router = useRouter();
 const route = useRoute();
 
-// Genre nav links are derived from the same bounded snapshot the Dashboard
-// uses, so they always reflect genres that actually have shows.
-const { shows } = useShows();
-const { genreGroups } = useGenreGroups(shows);
+// Genre nav links come from apps/api's lightweight genre-names endpoint —
+// no Show payloads fetched just to build 6 links.
+const { genreNames } = useGenreNames();
 const navGenres = computed(() =>
-  [...genreGroups.value]
-    .sort(([, a], [, b]) => b.length - a.length)
+  [...genreNames.value]
+    .sort((a, b) => b.count - a.count)
     .slice(0, 6)
-    .map(([genre]) => genre),
+    .map((g) => g.genre),
 );
 
 const searchOpen = ref(false);
