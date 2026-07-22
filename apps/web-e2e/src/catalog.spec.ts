@@ -8,12 +8,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Catalog', () => {
   test('loads page 1 of 3 with all 600 shows by default', async ({ page }) => {
     await page.goto('/catalog');
-    await expect(
-      page.getByRole('heading', { name: 'All Shows' }),
-    ).toBeVisible({ timeout: 10_000 });
-    await expect(
-      page.getByText('Page 1 of 3 — 600 shows total'),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'All Shows' })).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText('Page 1 of 3 — 600 shows total')).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('next/prev walk real pages and update the URL', async ({ page }) => {
@@ -70,9 +70,9 @@ test.describe('Catalog', () => {
 
     await page.getByLabel('Genre').selectOption('Drama');
 
-    await expect(
-      page.getByText('Page 1 of 2 — 300 shows total'),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Page 1 of 2 — 300 shows total')).toBeVisible({
+      timeout: 10_000,
+    });
     expect(page.url()).toContain('genre=Drama');
   });
 
@@ -84,9 +84,9 @@ test.describe('Catalog', () => {
 
     await page.getByLabel('Genre').selectOption('Comedy');
 
-    await expect(
-      page.getByText('Page 1 of 1 — 150 shows total'),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Page 1 of 1 — 150 shows total')).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page).not.toHaveURL(/page=/);
   });
 
@@ -134,8 +134,8 @@ test.describe('Catalog', () => {
 
     await expect(page.getByLabel('Genre')).toHaveValue('Drama');
     await expect(page.getByLabel('Sort by')).toHaveValue('title');
-    await expect(
-      page.getByText('Page 2 of 2 — 300 shows total'),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Page 2 of 2 — 300 shows total')).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
