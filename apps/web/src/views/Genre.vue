@@ -55,10 +55,7 @@ watch(
         style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))"
       >
         <div v-for="card in 20" :key="card" class="flex flex-col gap-2">
-          <SkeletonBlock
-            class="w-full rounded-lg"
-            style="aspect-ratio: 2/3"
-          />
+          <SkeletonBlock class="w-full rounded-lg" style="aspect-ratio: 2/3" />
           <SkeletonBlock class="h-3 w-full" />
           <SkeletonBlock class="h-3 w-2/3" />
         </div>
@@ -111,11 +108,7 @@ watch(
           >
             ‹ Prev
           </button>
-          <span
-            class="text-sm text-[#b3b3b3]"
-            role="status"
-            aria-live="polite"
-          >
+          <span class="text-sm text-[#b3b3b3]" role="status" aria-live="polite">
             Page {{ page + 1 }} of {{ totalPages }}
           </span>
           <button

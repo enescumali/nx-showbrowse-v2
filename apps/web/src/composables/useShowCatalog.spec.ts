@@ -63,9 +63,13 @@ describe('useShowCatalog', () => {
   });
 
   it('tracks the server-confirmed pageSize (for rank/position math in views)', async () => {
-    const getCatalogPage = vi
-      .fn()
-      .mockResolvedValue({ shows: [], page: 0, pageSize: 100, totalShows: 3, totalPages: 1 });
+    const getCatalogPage = vi.fn().mockResolvedValue({
+      shows: [],
+      page: 0,
+      pageSize: 100,
+      totalShows: 3,
+      totalPages: 1,
+    });
     const useCases = makeUseCases({ getCatalogPage });
 
     const { pageSize } = mountComposable(useShowCatalog, useCases, {
@@ -148,10 +152,11 @@ describe('useShowCatalog', () => {
       .mockResolvedValueOnce(page([], 0, 2));
     const useCases = makeUseCases({ getCatalogPage });
 
-    const { goToPage, genre, page: pageRef } = mountComposable(
-      useShowCatalog,
-      useCases,
-    );
+    const {
+      goToPage,
+      genre,
+      page: pageRef,
+    } = mountComposable(useShowCatalog, useCases);
     await flushPromises();
 
     goToPage(3);
@@ -178,10 +183,11 @@ describe('useShowCatalog', () => {
       .mockResolvedValueOnce(page([], 0, 5));
     const useCases = makeUseCases({ getCatalogPage });
 
-    const { goToPage, sort, page: pageRef } = mountComposable(
-      useShowCatalog,
-      useCases,
-    );
+    const {
+      goToPage,
+      sort,
+      page: pageRef,
+    } = mountComposable(useShowCatalog, useCases);
     await flushPromises();
 
     goToPage(2);

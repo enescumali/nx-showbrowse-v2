@@ -21,9 +21,13 @@ export function makeUseCases(
   overrides: Partial<ShowsUseCases> = {},
 ): ShowsUseCases {
   return {
-    getCatalogPage: vi
-      .fn()
-      .mockResolvedValue({ shows: [], page: 0, pageSize: 250, totalShows: 0, totalPages: 0 }),
+    getCatalogPage: vi.fn().mockResolvedValue({
+      shows: [],
+      page: 0,
+      pageSize: 250,
+      totalShows: 0,
+      totalPages: 0,
+    }),
     getGenreGroups: vi.fn().mockResolvedValue([]),
     getGenreNames: vi.fn().mockResolvedValue([]),
     getShowDetail: vi.fn().mockResolvedValue(mockDetail),

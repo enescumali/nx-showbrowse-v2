@@ -80,8 +80,8 @@ function submitJump() {
     <header class="mb-6">
       <h1 class="text-3xl font-bold text-[#e5e5e5] m-0">All Shows</h1>
       <p class="text-[#999] text-sm mt-1">
-        Browse the full TVMaze catalog, filtered and sorted across the
-        entire dataset.
+        Browse the full TVMaze catalog, filtered and sorted across the entire
+        dataset.
       </p>
     </header>
 
@@ -95,11 +95,7 @@ function submitJump() {
           class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
         >
           <option value="">All genres</option>
-          <option
-            v-for="g in genreNames"
-            :key="g.genre"
-            :value="g.genre"
-          >
+          <option v-for="g in genreNames" :key="g.genre" :value="g.genre">
             {{ g.genre }} ({{ g.count }})
           </option>
         </select>
@@ -179,10 +175,7 @@ function submitJump() {
         style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))"
       >
         <div v-for="card in 20" :key="card" class="flex flex-col gap-2">
-          <SkeletonBlock
-            class="w-full rounded-lg"
-            style="aspect-ratio: 2/3"
-          />
+          <SkeletonBlock class="w-full rounded-lg" style="aspect-ratio: 2/3" />
           <SkeletonBlock class="h-3 w-full" />
           <SkeletonBlock class="h-3 w-2/3" />
         </div>

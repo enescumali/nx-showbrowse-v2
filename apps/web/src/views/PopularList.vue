@@ -33,7 +33,11 @@ onMounted(() => {
       </p>
     </header>
 
-    <div v-if="loading && shows.length === 0" aria-busy="true" class="flex flex-col gap-3">
+    <div
+      v-if="loading && shows.length === 0"
+      aria-busy="true"
+      class="flex flex-col gap-3"
+    >
       <div
         v-for="i in 10"
         :key="i"
@@ -87,13 +91,17 @@ onMounted(() => {
             v-for="(show, index) in shows"
             :key="show.id"
             class="flex items-center gap-4 rounded-lg bg-[#1f1f1f] hover:bg-[#2a2a2a] transition-colors p-3 cursor-pointer group"
-            @click="$router.push({ name: 'ShowDetail', params: { id: show.id } })"
+            @click="
+              $router.push({ name: 'ShowDetail', params: { id: show.id } })
+            "
           >
             <!-- Rank number -->
             <span
               data-testid="rank-number"
               class="text-3xl font-black w-12 text-center shrink-0 leading-none"
-              :class="page * pageSize + index < 3 ? 'text-[#E50914]' : 'text-[#555]'"
+              :class="
+                page * pageSize + index < 3 ? 'text-[#E50914]' : 'text-[#555]'
+              "
               >{{ page * pageSize + index + 1 }}</span
             >
 
@@ -157,11 +165,7 @@ onMounted(() => {
           >
             ‹ Prev
           </button>
-          <span
-            class="text-sm text-[#b3b3b3]"
-            role="status"
-            aria-live="polite"
-          >
+          <span class="text-sm text-[#b3b3b3]" role="status" aria-live="polite">
             Page {{ page + 1 }} of {{ totalPages }}
           </span>
           <button
