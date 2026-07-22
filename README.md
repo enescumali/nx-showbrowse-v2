@@ -42,7 +42,7 @@ On its first-ever boot (no snapshot on disk yet), `apps/api` crawls TVMaze's ful
 
 ## Features
 
-- Browse TV shows grouped by genre, each sorted by rating — computed by `apps/api` across its *entire* synced catalog, not a single page
+- Browse TV shows grouped by genre, each sorted by rating — computed by `apps/api` across its _entire_ synced catalog, not a single page
 - Top-rated shows hero banner on the home screen, likewise a real global top-N
 - All Shows: real paginated/filtered/sorted browsing of the full catalog — genre filter and sort (rating, release date, or title) apply across every show that matches, not just the current page. Page, filter, and sort are all reflected in the URL so a view can be shared or bookmarked
 - Genre pages paginate too — a genre can have thousands of shows, so "view all" is a real paginated grid, not a single unbounded dump
@@ -76,7 +76,7 @@ The core data logic (fetching, mapping, caching) lives in `packages` (currently 
 
 ### Why two client/service pairs instead of one?
 
-`IShowApiClient`/`IShowService` model TVMaze's actual shape (paginated but genre-blind, no totals). `IBackendApiClient`/`ICatalogService` model what apps/api actually offers (genre-aware, globally paginated, real totals) — a structurally different capability, not just a different base URL, so it's a separate interface rather than a mutation of the first one. The three read operations that *are* identical in shape between them (`getShowById`/`searchShows`/`getShowsByCountry`) share the same use-case factories via a narrowed parameter type (`Pick<IShowService, 'getShowById'>`, etc.) instead of being duplicated.
+`IShowApiClient`/`IShowService` model TVMaze's actual shape (paginated but genre-blind, no totals). `IBackendApiClient`/`ICatalogService` model what apps/api actually offers (genre-aware, globally paginated, real totals) — a structurally different capability, not just a different base URL, so it's a separate interface rather than a mutation of the first one. The three read operations that _are_ identical in shape between them (`getShowById`/`searchShows`/`getShowsByCountry`) share the same use-case factories via a narrowed parameter type (`Pick<IShowService, 'getShowById'>`, etc.) instead of being duplicated.
 
 ### Why use cases instead of putting logic in composables?
 
@@ -99,10 +99,10 @@ Both service implementations in `packages/shows` use the same simple in-memory T
 
 ### Why "Browse by Genre" and "All Shows" are separate pages
 
-TVMaze's `/shows` index paginates but has no genre-aware endpoint and never exposes a total page count — grouping by genre and knowing "how many pages exist" both require having crawled the *entire* index first. `apps/api` does exactly that (see below), so both capabilities now exist and are correct at the same time. The two pages still exist because they serve different UX purposes, not because of a data limitation:
+TVMaze's `/shows` index paginates but has no genre-aware endpoint and never exposes a total page count — grouping by genre and knowing "how many pages exist" both require having crawled the _entire_ index first. `apps/api` does exactly that (see below), so both capabilities now exist and are correct at the same time. The two pages still exist because they serve different UX purposes, not because of a data limitation:
 
 - **Home (`/`)** shows a curated, bounded view: top-N per genre and a global top-10, both computed by `apps/api` across the whole catalog (`GET /genres?limit=20`, `GET /shows?sort=rating&pageSize=10`). This is "what's good," not "everything."
-- **All Shows (`/catalog`)**, **Genre pages (`/genre/:genre`)**, and **Popular (`/popular`)** are exhaustive, paginated views over `GET /shows`, which supports real `{page, pageSize, genre, sort}` filtering with correct `totalPages`/`totalShows` — a genre filter or sort here reflects *every* matching show in the catalog, not just what happened to be on the current page.
+- **All Shows (`/catalog`)**, **Genre pages (`/genre/:genre`)**, and **Popular (`/popular`)** are exhaustive, paginated views over `GET /shows`, which supports real `{page, pageSize, genre, sort}` filtering with correct `totalPages`/`totalShows` — a genre filter or sort here reflects _every_ matching show in the catalog, not just what happened to be on the current page.
 
 Since `apps/api`'s `/shows` always returns a real `totalPages` (unlike TVMaze), `useShowCatalog` (`apps/web/src/composables/useShowCatalog.ts`) just compares against it directly for Prev/Next/boundary logic — no probing or 404-based guessing needed. A failed request (a genuine network/server error, not an expected "out of range" case) leaves the previously-loaded page on screen with an inline notice, rather than blanking the grid.
 
