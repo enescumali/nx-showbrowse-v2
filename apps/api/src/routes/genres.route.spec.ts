@@ -32,9 +32,10 @@ function makeStore(overrides: Partial<IShowStore> = {}): IShowStore {
 
 describe('createGenresRoute', () => {
   it('shapes getByGenre() into { genre, shows } objects, defaulting the limit to 20', () => {
-    const getByGenre = vi
-      .fn()
-      .mockReturnValue([['Drama', [show(1, ['Drama'])]], ['Comedy', [show(2, ['Comedy'])]]]);
+    const getByGenre = vi.fn().mockReturnValue([
+      ['Drama', [show(1, ['Drama'])]],
+      ['Comedy', [show(2, ['Comedy'])]],
+    ]);
     const route = createGenresRoute(makeStore({ getByGenre }));
     const req = mockReq();
     const res = mockRes();
@@ -75,9 +76,10 @@ describe('createGenresRoute', () => {
 
 describe('createGenreNamesRoute', () => {
   it('returns store.getGenreNames() as-is', () => {
-    const getGenreNames = vi
-      .fn()
-      .mockReturnValue([{ genre: 'Drama', count: 10 }, { genre: 'Comedy', count: 4 }]);
+    const getGenreNames = vi.fn().mockReturnValue([
+      { genre: 'Drama', count: 10 },
+      { genre: 'Comedy', count: 4 },
+    ]);
     const route = createGenreNamesRoute(makeStore({ getGenreNames }));
     const req = mockReq();
     const res = mockRes();

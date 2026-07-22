@@ -15,7 +15,9 @@ function makeShowService(overrides: Partial<IShowService> = {}): IShowService {
 
 describe('createScheduleRoute', () => {
   it('returns schedule results for the requested country', async () => {
-    const getShowsByCountry = vi.fn().mockResolvedValue([{ id: 1, title: 'X' }]);
+    const getShowsByCountry = vi
+      .fn()
+      .mockResolvedValue([{ id: 1, title: 'X' }]);
     const route = createScheduleRoute(makeShowService({ getShowsByCountry }));
     const req = mockReq({ params: { country: 'US' } });
     const res = mockRes();
@@ -28,7 +30,9 @@ describe('createScheduleRoute', () => {
   });
 
   it('maps a service failure to a 502', async () => {
-    const getShowsByCountry = vi.fn().mockRejectedValue(new Error('network down'));
+    const getShowsByCountry = vi
+      .fn()
+      .mockRejectedValue(new Error('network down'));
     const route = createScheduleRoute(makeShowService({ getShowsByCountry }));
     const req = mockReq({ params: { country: 'US' } });
     const res = mockRes();

@@ -27,8 +27,13 @@ describe('createAdminRefreshRoute', () => {
   });
 
   it('202s and triggers refresh() when the token matches and a run was started', () => {
-    const refresh = vi.fn().mockReturnValue({ started: true, status: 'crawling' });
-    const route = createAdminRefreshRoute(makeSyncService({ refresh }), 'secret');
+    const refresh = vi
+      .fn()
+      .mockReturnValue({ started: true, status: 'crawling' });
+    const route = createAdminRefreshRoute(
+      makeSyncService({ refresh }),
+      'secret',
+    );
     const req = mockReq({ header: vi.fn().mockReturnValue('secret') });
     const res = mockRes();
 
@@ -36,12 +41,20 @@ describe('createAdminRefreshRoute', () => {
 
     expect(refresh).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(202);
-    expect(res.json).toHaveBeenCalledWith({ started: true, status: 'crawling' });
+    expect(res.json).toHaveBeenCalledWith({
+      started: true,
+      status: 'crawling',
+    });
   });
 
   it('409s when a refresh is already in flight', () => {
-    const refresh = vi.fn().mockReturnValue({ started: false, status: 'crawling' });
-    const route = createAdminRefreshRoute(makeSyncService({ refresh }), 'secret');
+    const refresh = vi
+      .fn()
+      .mockReturnValue({ started: false, status: 'crawling' });
+    const route = createAdminRefreshRoute(
+      makeSyncService({ refresh }),
+      'secret',
+    );
     const req = mockReq({ header: vi.fn().mockReturnValue('secret') });
     const res = mockRes();
 

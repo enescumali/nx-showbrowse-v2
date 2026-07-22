@@ -36,13 +36,19 @@ export function createListShowsRoute(store: IShowStore) {
  * rare. Proxied live to TVMaze instead, reusing the existing tested
  * IShowService (per-id TTL cache included). */
 export function createShowDetailRoute(showService: IShowService) {
-  return async function showDetailRoute(req: Request, res: Response): Promise<void> {
+  return async function showDetailRoute(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     try {
       const show = await showService.getShowById(paramToString(req.params.id));
       res.status(200).json(show);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load show';
-      res.status(message.startsWith('[404]') ? 404 : 502).json({ error: message });
+      const message =
+        err instanceof Error ? err.message : 'Failed to load show';
+      res
+        .status(message.startsWith('[404]') ? 404 : 502)
+        .json({ error: message });
     }
   };
 }

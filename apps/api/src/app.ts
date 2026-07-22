@@ -5,8 +5,14 @@ import type { ISyncService } from './ingestion/sync-service';
 import { createReadinessGate } from './middleware/readiness';
 import { cors } from './middleware/cors';
 import { createHealthRoute } from './routes/health.route';
-import { createGenresRoute, createGenreNamesRoute } from './routes/genres.route';
-import { createListShowsRoute, createShowDetailRoute } from './routes/shows.route';
+import {
+  createGenresRoute,
+  createGenreNamesRoute,
+} from './routes/genres.route';
+import {
+  createListShowsRoute,
+  createShowDetailRoute,
+} from './routes/shows.route';
 import { createSearchRoute } from './routes/search.route';
 import { createScheduleRoute } from './routes/schedule.route';
 import { createAdminRefreshRoute } from './routes/admin.route';

@@ -12,7 +12,12 @@ function makeStore(ready: boolean): IShowStore {
     getPage: vi.fn(),
     getMeta: vi
       .fn()
-      .mockReturnValue({ ready, lastSyncedAt: null, totalShows: 0, highestShowId: 0 }),
+      .mockReturnValue({
+        ready,
+        lastSyncedAt: null,
+        totalShows: 0,
+        highestShowId: 0,
+      }),
   };
 }
 

@@ -30,7 +30,9 @@ async function bootstrap(): Promise<void> {
     store.replace(snapshot);
     console.log(`[api] warm-started from snapshot: ${snapshot.length} shows`);
   } else {
-    console.log('[api] no snapshot found — starting the initial crawl in the background');
+    console.log(
+      '[api] no snapshot found — starting the initial crawl in the background',
+    );
     syncService.refresh();
   }
 

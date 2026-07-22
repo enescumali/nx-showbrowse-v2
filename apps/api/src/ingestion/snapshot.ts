@@ -4,7 +4,10 @@ import type { Show } from '@show-browse/shows';
 
 /** Write-then-rename so a crash mid-write never leaves a half-written
  * snapshot for the next boot to trip over. */
-export async function writeSnapshot(path: string, shows: Show[]): Promise<void> {
+export async function writeSnapshot(
+  path: string,
+  shows: Show[],
+): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   const tmpPath = `${path}.tmp`;
   await writeFile(tmpPath, JSON.stringify(shows), 'utf-8');

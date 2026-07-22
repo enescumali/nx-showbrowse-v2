@@ -5,7 +5,10 @@ import { paramToString } from '../utils/param';
 /** Proxied live — TVMaze's daily schedule is inherently a live query, not
  * something worth bulk-crawling. */
 export function createScheduleRoute(showService: IShowService) {
-  return async function scheduleRoute(req: Request, res: Response): Promise<void> {
+  return async function scheduleRoute(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
     try {
       const results = await showService.getShowsByCountry(
         paramToString(req.params.country),

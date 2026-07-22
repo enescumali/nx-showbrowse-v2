@@ -89,7 +89,8 @@ describe('crawlShows', () => {
     const getShows = vi.fn((page: number) => {
       if (page > 0) return Promise.reject(new Error('[404] Not Found'));
       calls++;
-      if (calls < 2) return Promise.reject(new Error('[429] Too Many Requests'));
+      if (calls < 2)
+        return Promise.reject(new Error('[429] Too Many Requests'));
       return Promise.resolve([rawShow(1)]);
     });
     const apiClient = createMockApiClient({ getShows });
@@ -109,7 +110,9 @@ describe('crawlShows', () => {
 
   it('throws after exhausting 429 retries', async () => {
     vi.useFakeTimers();
-    const getShows = vi.fn().mockRejectedValue(new Error('[429] Too Many Requests'));
+    const getShows = vi
+      .fn()
+      .mockRejectedValue(new Error('[429] Too Many Requests'));
     const apiClient = createMockApiClient({ getShows });
 
     const promise = crawlShows({

@@ -4,7 +4,9 @@ import { mockReq, mockRes } from '../test-utils/mock-http';
 import type { IShowStore } from '../store/show-store';
 import type { ISyncService, SyncStatus } from '../ingestion/sync-service';
 
-function makeStore(overrides: Partial<ReturnType<IShowStore['getMeta']>> = {}): IShowStore {
+function makeStore(
+  overrides: Partial<ReturnType<IShowStore['getMeta']>> = {},
+): IShowStore {
   return {
     replace: vi.fn(),
     getAll: vi.fn().mockReturnValue([]),
@@ -32,7 +34,10 @@ function makeSyncService(status: SyncStatus): ISyncService {
 
 describe('createHealthRoute', () => {
   it('always responds 200, even when not ready', () => {
-    const route = createHealthRoute(makeStore({ ready: false }), makeSyncService('crawling'));
+    const route = createHealthRoute(
+      makeStore({ ready: false }),
+      makeSyncService('crawling'),
+    );
     const req = mockReq();
     const res = mockRes();
 
@@ -50,7 +55,11 @@ describe('createHealthRoute', () => {
 
   it('reports readiness and meta once populated', () => {
     const route = createHealthRoute(
-      makeStore({ ready: true, lastSyncedAt: '2026-01-01T00:00:00.000Z', totalShows: 42 }),
+      makeStore({
+        ready: true,
+        lastSyncedAt: '2026-01-01T00:00:00.000Z',
+        totalShows: 42,
+      }),
       makeSyncService('idle'),
     );
     const req = mockReq();
@@ -59,7 +68,11 @@ describe('createHealthRoute', () => {
     route(req, res);
 
     expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ ready: true, totalShows: 42, syncStatus: 'idle' }),
+      expect.objectContaining({
+        ready: true,
+        totalShows: 42,
+        syncStatus: 'idle',
+      }),
     );
   });
 });

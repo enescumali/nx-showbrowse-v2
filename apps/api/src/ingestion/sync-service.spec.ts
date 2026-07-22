@@ -177,7 +177,9 @@ describe('createSyncService', () => {
       store,
       snapshotPath,
     });
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
 
     sync.refresh();
     await vi.waitFor(() => expect(sync.getStatus()).toBe('error'));

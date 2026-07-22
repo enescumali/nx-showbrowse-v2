@@ -102,9 +102,15 @@ describe('createShowStore', () => {
       const store = createShowStore();
       store.replace(shows);
 
-      expect(store.getPage({ page: 0, pageSize: 2 }).shows.map((s) => s.id)).toEqual([1, 2]);
-      expect(store.getPage({ page: 1, pageSize: 2 }).shows.map((s) => s.id)).toEqual([3, 4]);
-      expect(store.getPage({ page: 2, pageSize: 2 }).shows.map((s) => s.id)).toEqual([5]);
+      expect(
+        store.getPage({ page: 0, pageSize: 2 }).shows.map((s) => s.id),
+      ).toEqual([1, 2]);
+      expect(
+        store.getPage({ page: 1, pageSize: 2 }).shows.map((s) => s.id),
+      ).toEqual([3, 4]);
+      expect(
+        store.getPage({ page: 2, pageSize: 2 }).shows.map((s) => s.id),
+      ).toEqual([5]);
     });
 
     it('returns an empty page (not an error) beyond the last page, with correct totals', () => {
@@ -164,9 +170,15 @@ describe('createShowStore', () => {
         show(3, { title: 'Bravo', rating: 2, releaseDate: '2020-01-01' }),
       ]);
 
-      expect(store.getPage({ sort: 'rating' }).shows.map((s) => s.id)).toEqual([2, 1, 3]);
-      expect(store.getPage({ sort: 'date' }).shows.map((s) => s.id)).toEqual([2, 3, 1]);
-      expect(store.getPage({ sort: 'title' }).shows.map((s) => s.id)).toEqual([2, 3, 1]);
+      expect(store.getPage({ sort: 'rating' }).shows.map((s) => s.id)).toEqual([
+        2, 1, 3,
+      ]);
+      expect(store.getPage({ sort: 'date' }).shows.map((s) => s.id)).toEqual([
+        2, 3, 1,
+      ]);
+      expect(store.getPage({ sort: 'title' }).shows.map((s) => s.id)).toEqual([
+        2, 3, 1,
+      ]);
     });
 
     it('falls back to insertion order for an invalid/absent sort', () => {
@@ -174,7 +186,9 @@ describe('createShowStore', () => {
       store.replace(shows);
 
       expect(
-        store.getPage({ sort: 'not-a-real-option' as never }).shows.map((s) => s.id),
+        store
+          .getPage({ sort: 'not-a-real-option' as never })
+          .shows.map((s) => s.id),
       ).toEqual([1, 2, 3, 4, 5]);
       expect(store.getPage({}).shows.map((s) => s.id)).toEqual([1, 2, 3, 4, 5]);
     });

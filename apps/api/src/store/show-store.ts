@@ -106,7 +106,10 @@ export function createShowStore(): IShowStore {
     },
 
     getGenreNames(): GenreSummary[] {
-      return genreGroups.map(([genre, list]) => ({ genre, count: list.length }));
+      return genreGroups.map(([genre, list]) => ({
+        genre,
+        count: list.length,
+      }));
     },
 
     getPage(query: GetPageQuery): GetPageResult {

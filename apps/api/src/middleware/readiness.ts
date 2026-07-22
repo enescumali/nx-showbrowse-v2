@@ -11,7 +11,9 @@ export function createReadinessGate(store: IShowStore) {
     next: NextFunction,
   ): void {
     if (!store.getMeta().ready) {
-      res.status(503).json({ error: 'Service is warming up, try again shortly.' });
+      res
+        .status(503)
+        .json({ error: 'Service is warming up, try again shortly.' });
       return;
     }
     next();
