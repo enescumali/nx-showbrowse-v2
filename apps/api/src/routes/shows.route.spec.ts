@@ -10,38 +10,32 @@ function makeStore(overrides: Partial<IShowStore> = {}): IShowStore {
     getAll: vi.fn().mockReturnValue([]),
     getByGenre: vi.fn().mockReturnValue([]),
     getGenreNames: vi.fn().mockReturnValue([]),
-    getPage: vi
-      .fn()
-      .mockReturnValue({
-        shows: [],
-        page: 0,
-        pageSize: 250,
-        totalShows: 0,
-        totalPages: 0,
-      }),
-    getMeta: vi
-      .fn()
-      .mockReturnValue({
-        ready: true,
-        lastSyncedAt: null,
-        totalShows: 0,
-        highestShowId: 0,
-      }),
+    getPage: vi.fn().mockReturnValue({
+      shows: [],
+      page: 0,
+      pageSize: 250,
+      totalShows: 0,
+      totalPages: 0,
+    }),
+    getMeta: vi.fn().mockReturnValue({
+      ready: true,
+      lastSyncedAt: null,
+      totalShows: 0,
+      highestShowId: 0,
+    }),
     ...overrides,
   };
 }
 
 describe('createListShowsRoute', () => {
   it('passes parsed query params through to store.getPage', () => {
-    const getPage = vi
-      .fn()
-      .mockReturnValue({
-        shows: [],
-        page: 2,
-        pageSize: 50,
-        totalShows: 0,
-        totalPages: 0,
-      });
+    const getPage = vi.fn().mockReturnValue({
+      shows: [],
+      page: 2,
+      pageSize: 50,
+      totalShows: 0,
+      totalPages: 0,
+    });
     const route = createListShowsRoute(makeStore({ getPage }));
     const req = mockReq({
       query: { page: '2', pageSize: '50', genre: 'Drama', sort: 'rating' },
@@ -60,15 +54,13 @@ describe('createListShowsRoute', () => {
   });
 
   it('omits page/pageSize/genre/sort from the query when not provided', () => {
-    const getPage = vi
-      .fn()
-      .mockReturnValue({
-        shows: [],
-        page: 0,
-        pageSize: 250,
-        totalShows: 0,
-        totalPages: 0,
-      });
+    const getPage = vi.fn().mockReturnValue({
+      shows: [],
+      page: 0,
+      pageSize: 250,
+      totalShows: 0,
+      totalPages: 0,
+    });
     const route = createListShowsRoute(makeStore({ getPage }));
     const req = mockReq({ query: {} });
     const res = mockRes();

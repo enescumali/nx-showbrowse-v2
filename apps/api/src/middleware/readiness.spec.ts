@@ -10,14 +10,12 @@ function makeStore(ready: boolean): IShowStore {
     getByGenre: vi.fn().mockReturnValue([]),
     getGenreNames: vi.fn().mockReturnValue([]),
     getPage: vi.fn(),
-    getMeta: vi
-      .fn()
-      .mockReturnValue({
-        ready,
-        lastSyncedAt: null,
-        totalShows: 0,
-        highestShowId: 0,
-      }),
+    getMeta: vi.fn().mockReturnValue({
+      ready,
+      lastSyncedAt: null,
+      totalShows: 0,
+      highestShowId: 0,
+    }),
   };
 }
 
