@@ -12,7 +12,7 @@ test.describe('Show detail', () => {
     await expect(page).toHaveURL(/[?&]show=\d+/);
     await expect(page).not.toHaveURL(/\/shows\/\d+/);
 
-    const dialog = page.getByRole('dialog', { name: 'Show quick view' });
+    const dialog = page.getByRole('dialog', { name: /quick view/i });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('heading').first()).toBeVisible({
       timeout: 8_000,
@@ -27,7 +27,7 @@ test.describe('Show detail', () => {
     await expect(firstThumbnail).toBeVisible({ timeout: 10_000 });
     await firstThumbnail.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Show quick view' });
+    const dialog = page.getByRole('dialog', { name: /quick view/i });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('link', { name: /View full page/ }).click();
 
@@ -45,7 +45,7 @@ test.describe('Show detail', () => {
     await expect(firstThumbnail).toBeVisible({ timeout: 10_000 });
     await firstThumbnail.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Show quick view' });
+    const dialog = page.getByRole('dialog', { name: /quick view/i });
     await expect(dialog).toBeVisible();
 
     await page.keyboard.press('Escape');
@@ -62,7 +62,7 @@ test.describe('Show detail', () => {
     await expect(firstThumbnail).toBeVisible({ timeout: 10_000 });
     await firstThumbnail.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Show quick view' });
+    const dialog = page.getByRole('dialog', { name: /quick view/i });
     await expect(dialog).toBeVisible();
     let box = await dialog.boundingBox();
     expect(box?.width).toBeGreaterThan(350); // near-full mobile width

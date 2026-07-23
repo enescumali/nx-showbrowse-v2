@@ -15,9 +15,15 @@ const { activeShowId } = useQuickView();
   >
     Skip to main content
   </a>
-  <NavBar />
-  <ErrorBoundary>
-    <RouterView />
-  </ErrorBoundary>
+  <!-- inert while the quick-view panel is open — makes the dimmed
+       background fully unreachable to keyboard/AT, not just visually
+       de-emphasized, without hand-rolling aria-hidden + tabindex on
+       every descendant. -->
+  <div :inert="!!activeShowId">
+    <NavBar />
+    <ErrorBoundary>
+      <RouterView />
+    </ErrorBoundary>
+  </div>
   <ShowQuickView v-if="activeShowId" :key="activeShowId" :id="activeShowId" />
 </template>

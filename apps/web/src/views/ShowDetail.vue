@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { watchEffect, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Show } from '@show-browse/shows';
 import { useShowDetail } from '../composables/useShowDetail';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
 import ShowDetailContent from '../components/ShowDetailContent.vue';
@@ -9,18 +8,10 @@ import ShowDetailContent from '../components/ShowDetailContent.vue';
 const props = defineProps<{ id: string }>();
 const router = useRouter();
 
-// Optimistic data passed via router state when navigating from a thumbnail
-const optimistic = window.history.state?.showJson
-  ? (JSON.parse(window.history.state.showJson as string) as Show)
-  : null;
-
 const { show, loading, error } = useShowDetail(props.id);
 
 watchEffect(() => {
-  document.title =
-    (show.value ?? optimistic)
-      ? `${(show.value ?? optimistic)!.title} — ShowBrowse`
-      : 'ShowBrowse';
+  document.title = show.value ? `${show.value.title} — ShowBrowse` : 'ShowBrowse';
 });
 
 watch(error, (msg) => {
@@ -44,8 +35,7 @@ watch(error, (msg) => {
       ← Back
     </button>
 
-    <!-- Skeleton (initial load with no optimistic data) -->
-    <div v-if="loading && !show && !optimistic" aria-busy="true">
+    <div v-if="loading && !show" aria-busy="true">
       <SkeletonBlock class="w-full min-h-[220px] mb-4 rounded-xl" />
       <SkeletonBlock class="h-8 w-2/3 mb-3" />
       <div class="flex gap-3 mb-3">
@@ -88,6 +78,5 @@ watch(error, (msg) => {
     </div>
 
     <ShowDetailContent v-else-if="show" :show="show" />
-    <ShowDetailContent v-else-if="optimistic" :show="optimistic" partial />
   </main>
 </template>

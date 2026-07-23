@@ -20,11 +20,8 @@ export function useQuickView() {
     return typeof id === 'string' ? id : null;
   });
 
-  function openShow(id: number | string, showJson?: string) {
-    return router.push({
-      query: { ...route.query, show: String(id) },
-      state: showJson ? { showJson } : undefined,
-    });
+  function openShow(id: number | string) {
+    return router.push({ query: { ...route.query, show: String(id) } });
   }
 
   function closeShow() {

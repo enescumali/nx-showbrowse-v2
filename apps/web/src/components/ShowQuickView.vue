@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
-import type { Show } from '@show-browse/shows';
 import { useShowDetail } from '../composables/useShowDetail';
 import { useQuickView } from '../composables/useQuickView';
 import SkeletonBlock from './SkeletonBlock.vue';
@@ -13,13 +12,11 @@ import ShowDetailContent from './ShowDetailContent.vue';
 const props = defineProps<{ id: string }>();
 const { closeShow } = useQuickView();
 
-// Same optimistic-render pattern as ShowDetail.vue: instant thumbnail data
-// via router state while the full detail request is in flight.
-const optimistic = window.history.state?.showJson
-  ? (JSON.parse(window.history.state.showJson as string) as Show)
-  : null;
-
 const { show, loading, error } = useShowDetail(props.id);
+
+const dialogLabel = computed(() =>
+  show.value ? `${show.value.title} — quick view` : 'Show quick view',
+);
 
 const panelEl = ref<HTMLElement | null>(null);
 // Gates the internal v-if so the close (Escape/backdrop/✕) plays a leave
@@ -34,8 +31,36 @@ function requestClose() {
   closing.value = true;
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// App.vue makes the rest of the page `inert` while this is open, so Tab
+// naturally has nowhere else to go — this just closes the loop at the
+// panel's own edges instead of escaping into the (inert, but still
+// technically present) browser chrome.
+function trapFocus(e: KeyboardEvent) {
+  if (e.key !== 'Tab' || !panelEl.value) return;
+
+  const focusable = panelEl.value.querySelectorAll<HTMLElement>(
+    FOCUSABLE_SELECTOR,
+  );
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') requestClose();
+  else trapFocus(e);
 }
 
 onMounted(() => {
@@ -72,7 +97,7 @@ function afterLeave() {
       ref="panelEl"
       role="dialog"
       aria-modal="true"
-      aria-label="Show quick view"
+      :aria-label="dialogLabel"
       tabindex="-1"
       class="fixed z-[91] bg-surface shadow-xl overflow-y-auto outline-none inset-x-0 bottom-0 max-h-[85vh] rounded-t-2xl md:inset-x-auto md:right-0 md:top-0 md:bottom-0 md:h-full md:max-h-none md:w-full md:max-w-md md:rounded-t-none"
     >
@@ -96,7 +121,7 @@ function afterLeave() {
       </div>
 
       <div class="p-4">
-        <div v-if="loading && !show && !optimistic" aria-busy="true">
+        <div v-if="loading && !show" aria-busy="true">
           <SkeletonBlock class="w-full min-h-[180px] mb-4 rounded-xl" />
           <SkeletonBlock class="h-6 w-2/3 mb-3" />
           <SkeletonBlock class="h-4 w-full mb-2" />
@@ -112,7 +137,6 @@ function afterLeave() {
         </div>
 
         <ShowDetailContent v-else-if="show" :show="show" />
-        <ShowDetailContent v-else-if="optimistic" :show="optimistic" partial />
       </div>
     </div>
   </Transition>

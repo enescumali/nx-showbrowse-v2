@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import type { Show, ShowDetail } from '@show-browse/shows';
-import SkeletonBlock from './SkeletonBlock.vue';
+import type { ShowDetail } from '@show-browse/shows';
 
 defineProps<{
-  show: Show | ShowDetail;
-  /** True while `show` is optimistic thumbnail data, not the full fetched
-   * detail — renders a cast skeleton instead of omitting the section. */
-  partial?: boolean;
+  show: ShowDetail;
 }>();
 </script>
 
@@ -32,7 +28,7 @@ defineProps<{
       <div class="flex flex-wrap gap-4 text-text-muted text-sm">
         <span>⭐ {{ show.rating.toFixed(1) }}</span>
         <span>{{ show.releaseDate }}</span>
-        <span v-if="'runtime' in show && show.runtime">{{ show.runtime }} min</span>
+        <span v-if="show.runtime">{{ show.runtime }} min</span>
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -50,7 +46,7 @@ defineProps<{
         {{ show.overview }}
       </p>
 
-      <section v-if="'cast' in show && show.cast?.length">
+      <section v-if="show.cast?.length">
         <h2 class="text-xl font-semibold text-text mb-4">Cast</h2>
         <ul class="flex flex-wrap gap-4 list-none p-0 m-0">
           <li
@@ -72,19 +68,6 @@ defineProps<{
           </li>
         </ul>
       </section>
-
-      <div v-else-if="partial">
-        <SkeletonBlock class="h-6 w-24 mb-4" />
-        <div class="flex flex-wrap gap-4">
-          <div v-for="i in 4" :key="i" class="flex items-center gap-2 w-40">
-            <SkeletonBlock class="w-12 h-12 rounded-full shrink-0" />
-            <div class="flex flex-col gap-1 flex-1">
-              <SkeletonBlock class="h-3 w-full" />
-              <SkeletonBlock class="h-3 w-3/4" />
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

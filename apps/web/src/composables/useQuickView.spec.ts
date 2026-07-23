@@ -51,11 +51,7 @@ describe('useQuickView', () => {
   it('openShow adds ?show= to the current route without dropping other query params', async () => {
     const { activeShowId, openShow } = mountQuickView(router);
 
-    // Note: createMemoryHistory doesn't touch the real window.history, so
-    // the showJson state payload (read via window.history.state in
-    // ShowDetail.vue/ShowQuickView.vue) isn't observable here — covered
-    // by e2e instead, against a real browser history.
-    await openShow(7, JSON.stringify({ id: 7, title: 'Test' }));
+    await openShow(7);
 
     expect(activeShowId.value).toBe('7');
     expect(router.currentRoute.value.query.genre).toBe('Drama');

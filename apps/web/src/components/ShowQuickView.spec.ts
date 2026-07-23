@@ -83,4 +83,53 @@ describe('ShowQuickView', () => {
     expect(dialog.attributes('aria-modal')).toBe('true');
     expect(dialog.element).toBe(document.activeElement);
   });
+
+  it('labels the dialog generically while loading, then names the show once it loads', async () => {
+    const wrapper = mountQuickView();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[role="dialog"]').attributes('aria-label')).toBe(
+      'Show quick view',
+    );
+
+    await flushPromises();
+    expect(wrapper.find('[role="dialog"]').attributes('aria-label')).toBe(
+      `${mockDetail.title} — quick view`,
+    );
+  });
+
+  it('traps Tab focus within the panel', async () => {
+    const wrapper = mountQuickView();
+    // Still in the loading/skeleton state, so the header's link and close
+    // button are the only two focusable elements — a clean, deterministic
+    // pair to assert the wrap-around on (loaded state adds genre links,
+    // making "last focusable" a moving target rather than what's tested
+    // here: the trap logic itself).
+    await wrapper.vm.$nextTick();
+
+    const viewFullPageLink = document.querySelector('a') as HTMLElement;
+    const closeButton = document.querySelector(
+      'button[aria-label="Close"]',
+    ) as HTMLElement;
+
+    closeButton.focus();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Tab',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(document.activeElement).toBe(viewFullPageLink);
+
+    viewFullPageLink.focus();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(document.activeElement).toBe(closeButton);
+  });
 });

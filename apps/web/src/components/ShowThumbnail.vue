@@ -21,7 +21,7 @@ function navigate(e: MouseEvent) {
   if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)
     return;
   e.preventDefault();
-  openShow(props.show.id, JSON.stringify(props.show));
+  openShow(props.show.id);
 }
 
 const wrapperRef = ref<HTMLElement | null>(null);
