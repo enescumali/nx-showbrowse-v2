@@ -1,23 +1,19 @@
-// Entities
-export type { Show, ShowDetail, CastMember } from './entities/show.entity';
+// Types
+export type { Show, ShowDetail, CastMember } from './types/show.types';
 
 // Utils
 export { groupShowsByGenre } from './utils/group-shows-by-genre';
 
 // API client (apps/api-facing — used by apps/web)
-export { createBackendApiClient } from './api/backend-api.client';
+export { createBFFApiClient } from './api/bff-api.client';
 export type {
-  IBackendApiClient,
+  IBFFApiClient,
   CatalogSort,
   CatalogQuery,
   CatalogPage,
   GenreGroup,
   GenreSummary,
-} from './api/backend-api-client.interface';
-
-// Catalog service (caches IBackendApiClient calls)
-export { createCatalogService } from './services/catalog.service';
-export type { ICatalogService } from './services/catalog-service.interface';
+} from './api/bff-api-client.interface';
 
 // Use case factories
 export { createGetShowDetailUseCase } from './use-cases/get-show-detail.use-case';

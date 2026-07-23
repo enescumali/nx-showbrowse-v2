@@ -3,7 +3,7 @@ import { watchEffect, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShowDetail } from '../composables/useShowDetail';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
-import ShowDetailContent from '../components/ShowDetailContent.vue';
+import ShowDetailContent from '../components/show/DetailContent.vue';
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -11,7 +11,9 @@ const router = useRouter();
 const { show, loading, error } = useShowDetail(props.id);
 
 watchEffect(() => {
-  document.title = show.value ? `${show.value.title} — ShowBrowse` : 'ShowBrowse';
+  document.title = show.value
+    ? `${show.value.title} — ShowBrowse`
+    : 'ShowBrowse';
 });
 
 watch(error, (msg) => {

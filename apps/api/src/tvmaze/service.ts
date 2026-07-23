@@ -1,4 +1,4 @@
-import type { Show, ShowDetail } from './entities';
+import type { Show, ShowDetail } from '../types/show.types';
 import type { IShowApiClient } from './client';
 import { mapShowToDomain, mapShowWithCastToDomain } from './mapper';
 

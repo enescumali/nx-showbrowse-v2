@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeResumePage, mergeShowsById } from './merge-shows';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
 function show(id: number | string, overrides: Partial<Show> = {}): Show {
   return {

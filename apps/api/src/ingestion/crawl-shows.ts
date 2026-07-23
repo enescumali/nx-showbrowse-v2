@@ -1,5 +1,5 @@
 import type { IShowApiClient } from '../tvmaze/client';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 import { mapShowToDomain } from '../tvmaze/mapper';
 import type { RateLimiter } from './rate-limiter';
 

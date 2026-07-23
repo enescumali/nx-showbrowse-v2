@@ -2,7 +2,7 @@
 import type { Show } from '@show-browse/shows';
 import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useQuickView } from '../composables/useQuickView';
+import { useQuickView } from '../../composables/useQuickView';
 
 const props = defineProps<{ show: Show }>();
 const router = useRouter();

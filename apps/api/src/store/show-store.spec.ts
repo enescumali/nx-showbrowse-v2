@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createShowStore } from './show-store';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
 function show(
   id: number | string,
@@ -61,9 +61,9 @@ describe('createShowStore', () => {
       show(2, { genres: ['Drama', 'Comedy'], rating: 9 }),
     ]);
 
-    const groups = new Map(store.getByGenre());
-    expect(groups.get('Drama')?.map((s) => s.id)).toEqual([2, 1]); // sorted by rating desc
-    expect(groups.get('Comedy')?.map((s) => s.id)).toEqual([2]);
+    const groups = store.getByGenre();
+    expect(groups.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 1]); // sorted by rating desc
+    expect(groups.find((g) => g.genre === 'Comedy')?.shows.map((s) => s.id)).toEqual([2]);
   });
 
   it('getByGenre(limit) slices each group without affecting the cached full grouping', () => {
@@ -74,11 +74,11 @@ describe('createShowStore', () => {
       show(3, { genres: ['Drama'], rating: 7 }),
     ]);
 
-    const limited = new Map(store.getByGenre(2));
-    expect(limited.get('Drama')?.map((s) => s.id)).toEqual([2, 3]);
+    const limited = store.getByGenre(2);
+    expect(limited.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 3]);
 
-    const full = new Map(store.getByGenre());
-    expect(full.get('Drama')?.map((s) => s.id)).toEqual([2, 3, 1]);
+    const full = store.getByGenre();
+    expect(full.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 3, 1]);
   });
 
   it('getGenreNames() returns genre + count with no show payloads', () => {

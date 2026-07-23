@@ -91,7 +91,9 @@ function onBlur() {
     class="fixed top-0 left-0 right-0 z-50 bg-surface border-b border-edge"
     aria-label="Main navigation"
   >
-    <div class="max-w-[1400px] mx-auto px-4 h-14 flex items-center gap-4">
+    <div
+      class="relative z-50 max-w-[1400px] mx-auto px-4 h-14 flex items-center gap-4"
+    >
       <!-- Logo -->
       <RouterLink
         :to="{ name: 'Home' }"
@@ -133,137 +135,147 @@ function onBlur() {
         >
       </div>
 
-      <!-- Search (collapsible, Netflix-style) — desktop only in top bar -->
-      <div class="ml-auto hidden md:flex items-center">
-        <!-- Expanded search input -->
-        <div
-          v-if="searchOpen"
-          class="flex items-center border border-border rounded bg-card-alt px-3 py-1.5 gap-2 transition-colors focus-within:border-brand"
-        >
-          <svg
-            class="w-4 h-4 text-text shrink-0"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
+      <!-- Right-aligned cluster: search (desktop), theme toggle (both),
+           hamburger (mobile) — ml-auto lives on this wrapper only, so
+           exactly one element ever claims the leftover space regardless
+           of which children are hidden at a given breakpoint. Two auto
+           margins on separate children would each claim a share of the
+           free space instead, opening an unwanted gap between them. -->
+      <div class="ml-auto flex items-center gap-4">
+        <!-- Search (collapsible, Netflix-style) — desktop only in top bar -->
+        <div class="hidden md:flex items-center">
+          <!-- Expanded search input -->
+          <div
+            v-if="searchOpen"
+            class="flex items-center border border-border rounded bg-card-alt px-3 py-1.5 gap-2 transition-colors focus-within:border-brand"
           >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <input
-            ref="inputEl"
-            v-model="inputValue"
-            type="search"
-            placeholder="Search titles"
-            class="bg-transparent border-none outline-none text-text text-sm w-36 sm:w-52 placeholder-text-subtle [&::-webkit-search-cancel-button]:hidden"
-            aria-label="Search shows"
-            @input="onInput"
-            @keydown="onKeydown"
-            @blur="onBlur"
-          />
+            <svg
+              class="w-4 h-4 text-text shrink-0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              ref="inputEl"
+              v-model="inputValue"
+              type="search"
+              placeholder="Search titles"
+              class="bg-transparent border-none outline-none text-text text-sm w-36 sm:w-52 placeholder-text-subtle [&::-webkit-search-cancel-button]:hidden"
+              aria-label="Search shows"
+              @input="onInput"
+              @keydown="onKeydown"
+              @blur="onBlur"
+            />
+            <button
+              class="bg-transparent border-none text-text-subtle cursor-pointer text-xs leading-none hover:text-text-strong ml-1"
+              @click="closeSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Search icon button (collapsed) -->
           <button
-            class="bg-transparent border-none text-text-subtle cursor-pointer text-xs leading-none hover:text-text-strong ml-1"
-            @click="closeSearch"
-            aria-label="Close search"
+            v-else
+            class="bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
+            aria-label="Open search"
+            @click="openSearch"
           >
-            ✕
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
           </button>
         </div>
 
-        <!-- Search icon button (collapsed) -->
+        <!-- Theme toggle (visible on both mobile and desktop, sits next to
+             the hamburger on mobile since it's confusing tucked inside the
+             menu itself) -->
         <button
-          v-else
-          class="bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
-          aria-label="Open search"
-          @click="openSearch"
+          type="button"
+          class="inline-flex bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
+          :aria-label="
+            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+          "
+          @click="toggleTheme"
         >
           <svg
+            v-if="theme === 'dark'"
             class="w-5 h-5"
             fill="none"
             stroke="currentColor"
-            stroke-width="2.5"
+            stroke-width="2"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
+            <circle cx="12" cy="12" r="4" />
+            <path
+              stroke-linecap="round"
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+            />
+          </svg>
+          <svg
+            v-else
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+            />
+          </svg>
+        </button>
+
+        <!-- Hamburger button (mobile only) -->
+        <button
+          class="md:hidden bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
+          :aria-expanded="menuOpen"
+          aria-controls="mobile-menu"
+          aria-label="Toggle menu"
+          @click="toggleMenu"
+        >
+          <svg
+            v-if="!menuOpen"
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg
+            v-else
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-
-      <!-- Theme toggle -->
-      <button
-        type="button"
-        class="hidden md:inline-flex bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
-        :aria-label="
-          theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-        "
-        @click="toggleTheme"
-      >
-        <svg
-          v-if="theme === 'dark'"
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="4" />
-          <path
-            stroke-linecap="round"
-            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-          />
-        </svg>
-        <svg
-          v-else
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
-          />
-        </svg>
-      </button>
-
-      <!-- Hamburger button (mobile only) -->
-      <button
-        class="md:hidden bg-transparent border-none text-text cursor-pointer p-1 ml-auto hover:text-text-muted transition-colors"
-        :aria-expanded="menuOpen"
-        aria-controls="mobile-menu"
-        aria-label="Toggle menu"
-        @click="toggleMenu"
-      >
-        <svg
-          v-if="!menuOpen"
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <svg
-          v-else
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
     </div>
 
     <!-- Overlay for mobile menu -->
@@ -329,14 +341,6 @@ function onBlur() {
         @click="closeMenu"
         >On TV Today</RouterLink
       >
-
-      <button
-        type="button"
-        class="self-start mt-3 flex items-center gap-2 bg-transparent border-none text-text-subtle text-sm cursor-pointer p-0 hover:text-text-strong transition-colors"
-        @click="toggleTheme"
-      >
-        {{ theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode' }}
-      </button>
     </div>
   </nav>
 </template>

@@ -1,11 +1,13 @@
-import type { GenreGroup } from '../api/backend-api-client.interface';
-import type { ICatalogService } from '../services/catalog-service.interface';
+import type {
+  IBFFApiClient,
+  GenreGroup,
+} from '../api/bff-api-client.interface';
 
 export function createGetGenreGroupsUseCase(
-  catalogService: Pick<ICatalogService, 'getGenreGroups'>,
+  apiClient: Pick<IBFFApiClient, 'getGenreGroups'>,
 ) {
   return async function getGenreGroups(limit?: number): Promise<GenreGroup[]> {
-    return catalogService.getGenreGroups(limit);
+    return apiClient.getGenreGroups(limit);
   };
 }
 

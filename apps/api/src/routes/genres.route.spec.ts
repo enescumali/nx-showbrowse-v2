@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createGenresRoute, createGenreNamesRoute } from './genres.route';
 import { mockReq, mockRes } from '../test-utils/mock-http';
 import type { IShowStore } from '../store/show-store';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
 function show(id: number, genres: string[]): Show {
   return {
@@ -31,10 +31,10 @@ function makeStore(overrides: Partial<IShowStore> = {}): IShowStore {
 }
 
 describe('createGenresRoute', () => {
-  it('shapes getByGenre() into { genre, shows } objects, defaulting the limit to 20', () => {
+  it('returns store.getByGenre() as-is, defaulting the limit to 20', () => {
     const getByGenre = vi.fn().mockReturnValue([
-      ['Drama', [show(1, ['Drama'])]],
-      ['Comedy', [show(2, ['Comedy'])]],
+      { genre: 'Drama', shows: [show(1, ['Drama'])] },
+      { genre: 'Comedy', shows: [show(2, ['Comedy'])] },
     ]);
     const route = createGenresRoute(makeStore({ getByGenre }));
     const req = mockReq();

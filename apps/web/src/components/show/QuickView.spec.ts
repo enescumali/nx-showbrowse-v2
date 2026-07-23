@@ -2,9 +2,9 @@
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
 import { createRouter, createMemoryHistory, RouterLink } from 'vue-router';
 import { describe, it, expect, afterEach } from 'vitest';
-import ShowQuickView from './ShowQuickView.vue';
-import { SHOWS_USE_CASES_KEY } from '../di/injection-keys';
-import { makeUseCases, mockDetail } from '../test-utils/makeUseCases';
+import ShowQuickView from './QuickView.vue';
+import { SHOWS_USE_CASES_KEY } from '../../di/injection-keys';
+import { makeUseCases, mockDetail } from '../../test-utils/makeUseCases';
 
 const router = createRouter({
   history: createMemoryHistory(),

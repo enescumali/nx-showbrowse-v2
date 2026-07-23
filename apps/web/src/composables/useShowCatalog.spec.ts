@@ -5,6 +5,7 @@ import { useShowCatalog } from './useShowCatalog';
 import { makeUseCases } from '../test-utils/makeUseCases';
 import { mountComposable } from '../test-utils/mountComposable';
 import { makeShow } from '../test-utils/makeShow';
+import { DEFAULT_PAGE_SIZE } from '../config';
 import type { CatalogPage, Show } from '@show-browse/shows';
 
 function page(
@@ -32,7 +33,7 @@ describe('useShowCatalog', () => {
 
     expect(getCatalogPage).toHaveBeenCalledWith({
       page: 0,
-      pageSize: undefined,
+      pageSize: DEFAULT_PAGE_SIZE,
       genre: undefined,
       sort: undefined,
     });
@@ -169,7 +170,7 @@ describe('useShowCatalog', () => {
     expect(pageRef.value).toBe(0);
     expect(getCatalogPage).toHaveBeenLastCalledWith({
       page: 0,
-      pageSize: undefined,
+      pageSize: DEFAULT_PAGE_SIZE,
       genre: 'Drama',
       sort: undefined,
     });
@@ -230,7 +231,7 @@ describe('useShowCatalog', () => {
     expect(pageRef.value).toBe(0);
     expect(getCatalogPage).toHaveBeenLastCalledWith({
       page: 0,
-      pageSize: undefined,
+      pageSize: DEFAULT_PAGE_SIZE,
       genre: undefined,
       sort: 'title',
     });

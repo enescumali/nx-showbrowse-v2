@@ -1,16 +1,16 @@
 import type {
+  IBFFApiClient,
   CatalogQuery,
   CatalogPage,
-} from '../api/backend-api-client.interface';
-import type { ICatalogService } from '../services/catalog-service.interface';
+} from '../api/bff-api-client.interface';
 
 export function createGetCatalogPageUseCase(
-  catalogService: Pick<ICatalogService, 'getCatalogPage'>,
+  apiClient: Pick<IBFFApiClient, 'getCatalogPage'>,
 ) {
   return async function getCatalogPage(
     query: CatalogQuery,
   ): Promise<CatalogPage> {
-    return catalogService.getCatalogPage(query);
+    return apiClient.getCatalogPage(query);
   };
 }
 

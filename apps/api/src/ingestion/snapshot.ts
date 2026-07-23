@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
 /** Write-then-rename so a crash mid-write never leaves a half-written
  * snapshot for the next boot to trip over. */

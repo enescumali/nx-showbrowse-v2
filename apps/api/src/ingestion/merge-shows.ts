@@ -1,4 +1,4 @@
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
 /** Per TVMaze's own docs: resume future syncs where the last one left off. */
 export function computeResumePage(

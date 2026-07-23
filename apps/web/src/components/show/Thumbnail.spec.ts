@@ -3,11 +3,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import type { Show } from '@show-browse/shows';
-import ShowThumbnail from './ShowThumbnail.vue';
+import ShowThumbnail from './Thumbnail.vue';
 import {
   setupMockIntersectionObserver,
   latestCallback,
-} from '../test-utils/mockIntersectionObserver';
+} from '../../test-utils/mockIntersectionObserver';
 
 // Setup the IntersectionObserver mock before tests
 setupMockIntersectionObserver();

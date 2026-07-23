@@ -1,3 +1,5 @@
+import type { CatalogSort } from '@show-browse/shows';
+
 export interface Country {
   code: string;
   label: string;
@@ -23,3 +25,14 @@ export const COUNTRIES: Country[] = [
   { code: 'NZ', label: '🇳🇿 New Zealand' },
   { code: 'TR', label: '🇹🇷 Turkey' },
 ];
+
+export const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
+  { value: 'rating', label: 'Rating (high to low)' },
+  { value: 'date', label: 'Release date (newest first)' },
+  { value: 'title', label: 'Title (A–Z)' },
+];
+
+export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 250];
+export const DEFAULT_PAGE_SIZE = 250;
+
+export const SORT_VALUES = SORT_OPTIONS.map((option) => option.value);

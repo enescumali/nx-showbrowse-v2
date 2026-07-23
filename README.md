@@ -58,14 +58,14 @@ The project is structured as an Nx monorepo with a strict separation between bus
 ```
 packages/
   shows/    # Pure TypeScript — zero framework dependencies
-              entities, one client/service pair (apps/api-facing:
-              IBackendApiClient/ICatalogService), and use cases — all typed
+              types, one API client (apps/api-facing: IBFFApiClient),
+              and use cases that depend on it directly — all typed
               against apps/api's HTTP contract, never TVMaze's
 apps/
   api/      # Node/Express backend-for-frontend
               owns its entire TVMaze integration locally (apps/api/src/tvmaze/):
-              raw types, client, mapper, cached service, entities — none of it
-              shared with packages/shows (see "Backend" below)
+              raw types, client, mapper, cached service — none of it shared
+              with packages/shows (see "Backend" below)
   web/      # Vue 3 presentation layer
               components, composables, views, router, DI plugin
 ```
@@ -76,13 +76,13 @@ The core data logic (fetching, mapping, caching) lives in `packages` (currently 
 
 ### Why apps/api's TVMaze integration lives locally instead of shared
 
-`packages/shows` represents exactly one upstream from `apps/web`'s point of view: `apps/api`'s HTTP contract. It has no business knowing `apps/api`'s data came from TVMaze, or sharing types with TVMaze's wire format — that would leak an implementation detail of one specific backend into a package meant to be provider-agnostic. So `apps/api` owns its complete TVMaze integration privately (`apps/api/src/tvmaze/`: raw types, `IShowApiClient`, mapper, cached `IShowService`, its own `Show`/`ShowDetail` entities) and `packages/shows` owns its own, independent `Show`/`ShowDetail` entities plus the client/service that talks to `apps/api`. Neither imports the other's data-source-facing code.
+`packages/shows` represents exactly one upstream from `apps/web`'s point of view: `apps/api`'s HTTP contract. It has no business knowing `apps/api`'s data came from TVMaze, or sharing types with TVMaze's wire format — that would leak an implementation detail of one specific backend into a package meant to be provider-agnostic. So `apps/api` owns its complete TVMaze integration privately (`apps/api/src/tvmaze/`: raw wire types, `IShowApiClient`, mapper, cached `IShowService`) and `packages/shows` owns its own, independent `Show`/`ShowDetail` types plus the client that talks to `apps/api`. Neither imports the other's data-source-facing code. (`apps/api`'s own mapped `Show`/`ShowDetail`/`CastMember` types live at `apps/api/src/types/` rather than inside `tvmaze/` — they're app-wide, used by `store/`, `ingestion/`, and `routes/` too, not just the TVMaze integration that produces them.)
 
-The three read operations that happen to have identical signatures on both sides (`getShowById`/`searchShows`/`getShowsByCountry`) still share the same use-case factories in `packages/shows`, just narrowed to `Pick<ICatalogService, 'getShowById'>` etc. — a type-only reference to `packages/shows`'s own service interface, not to anything TVMaze-shaped.
+The three read operations that happen to have identical signatures on both sides (`getShowById`/`searchShows`/`getShowsByCountry`) still share the same use-case factories in `packages/shows`, just narrowed to `Pick<IBFFApiClient, 'getShowById'>` etc. — a type-only reference to `packages/shows`'s own client interface, not to anything TVMaze-shaped.
 
 ### Why use cases instead of putting logic in composables?
 
-Use cases (`createGetCatalogPageUseCase`, `createSearchShowsUseCase`, etc.) are plain factory functions that express a single business operation and depend only on a narrow slice of a service interface. This keeps the Vue composables thin — they handle reactivity and loading state, not business rules. It also makes the logic independently testable with a mock service, without mounting any component.
+Use cases (`createGetCatalogPageUseCase`, `createSearchShowsUseCase`, etc.) are plain factory functions that express a single business operation and depend only on a narrow slice of `IBFFApiClient` (e.g. `Pick<IBFFApiClient, 'getCatalogPage'>`). This keeps the Vue composables thin — they handle reactivity and loading state, not business rules. It also makes the logic independently testable with a mock client, without mounting any component.
 
 ### Why `provide/inject` instead of Pinia?
 
@@ -94,10 +94,9 @@ Nx enforces hard boundaries between `packages/` and `apps/` at the linter level,
 
 ### Caching
 
-`apps/api`'s `tvmaze/service.ts` and `packages/shows`'s `catalog.service.ts` independently use the same simple in-memory TTL cache shape (managed via `CACHE_TTL_MS`, fallback 5 minutes), keyed per query — same pattern, no shared code:
+`apps/api/src/tvmaze/service.ts` keeps a simple in-memory TTL cache (managed via `CACHE_TTL_MS`, fallback 5 minutes) in front of its live TVMaze proxy calls (`/shows/:id`, `/search`, `/schedule/:country`) — those genuinely hit an external, rate-limited API, so avoiding a redundant call has a real payoff.
 
-- `apps/api/src/tvmaze/service.ts` (backs apps/api's own live-proxy routes) — per show id, per country.
-- `packages/shows/src/services/catalog.service.ts` (used by `apps/web`) — per exact `{page,pageSize,genre,sort}` query, per genre-groups `limit`, per show id, per country. Search is never cached in either — repeatedly searching the same term should reflect current results, not stale ones.
+`packages/shows` deliberately has no cache of its own in front of its calls to `apps/api`. It used to (an equivalent TTL cache wrapping every `IBFFApiClient` call), but once `apps/api` already crawls and serves the full catalog from memory, caching the browser-to-`apps/api` hop stopped protecting anything scarce — there's no rate limit to shield, and `apps/api`'s own responses are already fast. Keeping it would have meant an extra layer purely for its own sake (plus a real correctness gotcha: `POST /admin/refresh` can update `apps/api`'s data on demand, and a client-side cache would happily keep serving stale results for up to `CACHE_TTL_MS` afterward). Removed in favor of the use-cases depending on `IBFFApiClient` directly — one fewer file, one fewer type, nothing left for a reviewer to ask "why is this cached twice?" about.
 
 ### Why Home and All Shows, and not separate Genre/Popular pages too
 
@@ -124,7 +123,7 @@ As a real modal, it also does what the ARIA dialog pattern expects: focus moves 
 
 A small backend-for-frontend that periodically crawls TVMaze's **full** show index into memory, so genre-grouping, global sorting, and real pagination can all be correct **at the same time** — `apps/web` consumes it exclusively and never talks to TVMaze directly for the bulk catalog.
 
-`apps/api` owns its complete TVMaze integration locally (`apps/api/src/tvmaze/`: raw wire types, `IShowApiClient`, mapper, cached `IShowService`, its own `Show`/`ShowDetail`/`CastMember` entities) rather than importing any of it from `packages/shows` — its HTTP contract is its own, independent of whatever `packages/shows`'s `Show`/`ShowDetail` types happen to look like. `apps/api/src/store/group-shows-by-genre.ts` is likewise its own local copy, not shared with the client-side grouping util `packages/shows` still exposes for `apps/web`'s Today page.
+`apps/api` owns its complete TVMaze integration locally (`apps/api/src/tvmaze/`: raw wire types, `IShowApiClient`, mapper, cached `IShowService`) rather than importing any of it from `packages/shows` — its HTTP contract is its own, independent of whatever `packages/shows`'s `Show`/`ShowDetail` types happen to look like. Its own mapped `Show`/`ShowDetail`/`CastMember` types live at `apps/api/src/types/`, separate from `tvmaze/` since `store/`, `ingestion/`, and `routes/` depend on them too. `apps/api/src/store/group-shows-by-genre.ts` is likewise its own local copy, not shared with the client-side grouping util `packages/shows` still exposes for `apps/web`'s Today page.
 
 **How it works:**
 
@@ -251,5 +250,5 @@ This project was built with heavy AI assistance, using Claude Code (Anthropic's 
 2. Global logging/monitoring integration (eg. Datadog)
 3. MSW implementation to use mock data in both tests and development process to become independent from possible expected backend changes
 4. Faker implementation to generate dynamic/realistic data for testing (minor)
-5. Deploy `apps/api` somewhere persistent (currently only `apps/web` is deployed via Vercel) and point production's `VITE_API_BASE_URL` at it — needed before the live demo link reflects this backend-backed architecture
+5. Deploy `apps/api` somewhere persistent (currently only `apps/web` is deployed via Vercel) and point production's `VITE_BFF_API_BASE_URL` at it — needed before the live demo link reflects this backend-backed architecture
 6. Prune delisted shows during incremental sync (see Known limitations)

@@ -1,6 +1,11 @@
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 
-export function groupShowsByGenre(shows: Show[]): [string, Show[]][] {
+export interface GenreGroup {
+  genre: string;
+  shows: Show[];
+}
+
+export function groupShowsByGenre(shows: Show[]): GenreGroup[] {
   const map = new Map<string, Show[]>();
 
   for (const show of shows) {
@@ -19,8 +24,8 @@ export function groupShowsByGenre(shows: Show[]): [string, Show[]][] {
 
   return [...map.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([genre, grouped]) => [
+    .map(([genre, grouped]) => ({
       genre,
-      [...grouped].sort((a, b) => b.rating - a.rating),
-    ]);
+      shows: [...grouped].sort((a, b) => b.rating - a.rating),
+    }));
 }

@@ -2,7 +2,7 @@
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory, RouterLink } from 'vue-router';
 import { describe, it, expect } from 'vitest';
-import ShowDetailContent from './ShowDetailContent.vue';
+import ShowDetailContent from './DetailContent.vue';
 import type { ShowDetail } from '@show-browse/shows';
 
 const router = createRouter({

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Show } from '@show-browse/shows';
-import ShowThumbnail from './ShowThumbnail.vue';
+import ShowThumbnail from './Thumbnail.vue';
 
 defineProps<{ shows: Show[] }>();
 </script>

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createGetShowDetailUseCase } from './get-show-detail.use-case';
-import type { ICatalogService } from '../services/catalog-service.interface';
-import type { Show, ShowDetail } from '../entities/show.entity';
+import type { IBFFApiClient } from '../api/bff-api-client.interface';
+import type { Show, ShowDetail } from '../types/show.types';
 
 function createMockService(
-  overrides: Partial<Pick<ICatalogService, 'getShowById'>> = {},
-): Pick<ICatalogService, 'getShowById'> {
+  overrides: Partial<Pick<IBFFApiClient, 'getShowById'>> = {},
+): Pick<IBFFApiClient, 'getShowById'> {
   return {
     getShowById: vi.fn().mockResolvedValue({} as ShowDetail),
     ...overrides,

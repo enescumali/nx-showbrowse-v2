@@ -1,13 +1,13 @@
-import type { Show, ShowDetail } from '../entities/show.entity';
+import type { Show, ShowDetail } from '../types/show.types';
 import type {
-  IBackendApiClient,
+  IBFFApiClient,
   CatalogQuery,
   CatalogPage,
   GenreGroup,
   GenreSummary,
-} from './backend-api-client.interface';
+} from './bff-api-client.interface';
 
-export function createBackendApiClient(baseURL: string): IBackendApiClient {
+export function createBFFApiClient(baseURL: string): IBFFApiClient {
   async function fetchJson<T>(
     path: string,
     params?: Record<string, unknown>,
@@ -15,7 +15,6 @@ export function createBackendApiClient(baseURL: string): IBackendApiClient {
     const url = new URL(path, baseURL);
     if (params) {
       for (const [key, value] of Object.entries(params)) {
-        // Unlike TVMaze's client, several params here are legitimately
         // optional (genre/sort/pageSize/limit) — omit rather than send "undefined".
         if (value === undefined) continue;
         url.searchParams.set(key, String(value));

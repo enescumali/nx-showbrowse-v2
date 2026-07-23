@@ -3,26 +3,15 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowCatalog } from '../composables/useShowCatalog';
 import { useGenreNames } from '../composables/useGenreNames';
-import ShowThumbnailGrid from '../components/ShowThumbnailGrid.vue';
+import ShowThumbnailGrid from '../components/show/ThumbnailGrid.vue';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
-import type { CatalogSort } from '@show-browse/shows';
+import CatalogFilters from '../components/catalog/Filters.vue';
+import CatalogPagination from '../components/catalog/Pagination.vue';
+import { toSort, toPageSize } from '../utils';
+import { DEFAULT_PAGE_SIZE } from '../config';
 
 const route = useRoute();
 const router = useRouter();
-
-function toSort(value: unknown): CatalogSort | '' {
-  return value === 'rating' || value === 'date' || value === 'title'
-    ? value
-    : '';
-}
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 250];
-const DEFAULT_PAGE_SIZE = 250;
-
-function toPageSize(value: unknown): number {
-  const parsed = Number(value);
-  return PAGE_SIZE_OPTIONS.includes(parsed) ? parsed : DEFAULT_PAGE_SIZE;
-}
 
 const {
   shows,
@@ -102,45 +91,12 @@ watch(
       </p>
     </header>
 
-    <div class="flex flex-wrap items-center gap-3 mb-6 rounded-lg bg-card p-3">
-      <label class="flex items-center gap-2 text-sm text-text-muted">
-        Genre
-        <select
-          v-model="genre"
-          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
-        >
-          <option value="">All genres</option>
-          <option v-for="g in genreNames" :key="g.genre" :value="g.genre">
-            {{ g.genre }} ({{ g.count }})
-          </option>
-        </select>
-      </label>
-
-      <label class="flex items-center gap-2 text-sm text-text-muted">
-        Sort by
-        <select
-          v-model="sort"
-          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
-        >
-          <option value="">Default order</option>
-          <option value="rating">Rating (high to low)</option>
-          <option value="date">Release date (newest first)</option>
-          <option value="title">Title (A–Z)</option>
-        </select>
-      </label>
-
-      <label class="flex items-center gap-2 text-sm text-text-muted">
-        Per page
-        <select
-          v-model.number="requestedPageSize"
-          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
-        >
-          <option v-for="size in PAGE_SIZE_OPTIONS" :key="size" :value="size">
-            {{ size }}
-          </option>
-        </select>
-      </label>
-    </div>
+    <CatalogFilters
+      v-model:genre="genre"
+      v-model:sort="sort"
+      v-model:page-size="requestedPageSize"
+      :genre-names="genreNames"
+    />
 
     <!-- Initial load -->
     <div v-if="loading && shows.length === 0" aria-busy="true">
@@ -192,39 +148,14 @@ watch(
       <template v-else>
         <ShowThumbnailGrid :shows="shows" />
 
-        <div
-          class="flex items-center justify-center gap-3 mt-6 flex-wrap rounded-lg bg-card p-3"
-        >
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded border border-border text-sm text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand transition-colors"
-            :disabled="page === 0 || loading"
-            aria-label="Previous page"
-            @click="prevPage"
-          >
-            ‹ Prev
-          </button>
-          <span
-            class="text-sm text-text-muted"
-            role="status"
-            aria-live="polite"
-          >
-            <template v-if="loading">Loading…</template>
-            <template v-else>{{ page + 1 }} of {{ totalPages }}</template>
-          </span>
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded border border-border text-sm text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand transition-colors"
-            :disabled="page >= totalPages - 1 || loading"
-            aria-label="Next page"
-            @click="nextPage"
-          >
-            Next ›
-          </button>
-          <span v-if="!loading" class="text-sm text-text-subtle">
-            {{ totalShows.toLocaleString() }} shows total
-          </span>
-        </div>
+        <CatalogPagination
+          :page="page"
+          :total-pages="totalPages"
+          :total-shows="totalShows"
+          :loading="loading"
+          @prev="prevPage"
+          @next="nextPage"
+        />
       </template>
     </template>
   </main>

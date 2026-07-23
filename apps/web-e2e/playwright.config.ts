@@ -43,7 +43,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
-        VITE_API_BASE_URL: `http://localhost:${API_PORT}`,
+        VITE_BFF_API_BASE_URL: `http://localhost:${API_PORT}`,
       },
     },
   ],

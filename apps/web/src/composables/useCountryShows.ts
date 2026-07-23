@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue';
 import { injectRequired, SHOWS_USE_CASES_KEY } from '../di/injection-keys';
 import { useAsyncState } from './useAsyncState';
-import { DEFAULT_COUNTRY } from '../config/countries';
+import { DEFAULT_COUNTRY } from '../config';
 import type { Show } from '@show-browse/shows';
 
 export function useCountryShows() {

@@ -2,9 +2,10 @@
 import { mount } from '@vue/test-utils';
 import { createRouter, createMemoryHistory, RouterLink } from 'vue-router';
 import { describe, it, expect } from 'vitest';
-import ShowCarousel from './ShowCarousel.vue';
-import { setupMockResizeObserver } from '../test-utils/mockResizeObserver';
-import { setupMockIntersectionObserver } from '../test-utils/mockIntersectionObserver';
+import ShowCarousel from './Carousel.vue';
+import ShowThumbnail from './Thumbnail.vue';
+import { setupMockResizeObserver } from '../../test-utils/mockResizeObserver';
+import { setupMockIntersectionObserver } from '../../test-utils/mockIntersectionObserver';
 
 // Setup ResizeObserver and IntersectionObserver mocks for jsdom
 setupMockResizeObserver();
@@ -69,7 +70,7 @@ describe('ShowCarousel', () => {
       global: { plugins: [router], stubs: { RouterLink } },
     });
 
-    expect(wrapper.findAllComponents({ name: 'ShowThumbnail' }).length).toBe(2);
+    expect(wrapper.findAllComponents(ShowThumbnail).length).toBe(2);
   });
 
   it('handles empty shows array gracefully', () => {
@@ -78,7 +79,7 @@ describe('ShowCarousel', () => {
       global: { plugins: [router], stubs: { RouterLink } },
     });
 
-    expect(wrapper.findAllComponents({ name: 'ShowThumbnail' }).length).toBe(0);
+    expect(wrapper.findAllComponents(ShowThumbnail).length).toBe(0);
   });
 
   it('does not render a "See all" link when seeAllTo is omitted', () => {

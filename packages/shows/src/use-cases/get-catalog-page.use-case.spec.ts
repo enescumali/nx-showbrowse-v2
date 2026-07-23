@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createGetCatalogPageUseCase } from './get-catalog-page.use-case';
-import type { CatalogPage } from '../api/backend-api-client.interface';
+import type { CatalogPage } from '../api/bff-api-client.interface';
 
 describe('createGetCatalogPageUseCase', () => {
-  it('delegates to the catalog service with the given query', async () => {
+  it('delegates to the API client with the given query', async () => {
     const page: CatalogPage = {
       shows: [],
       page: 2,
@@ -11,16 +11,16 @@ describe('createGetCatalogPageUseCase', () => {
       totalShows: 0,
       totalPages: 0,
     };
-    const catalogService = { getCatalogPage: vi.fn().mockResolvedValue(page) };
+    const apiClient = { getCatalogPage: vi.fn().mockResolvedValue(page) };
 
-    const result = await createGetCatalogPageUseCase(catalogService)({
+    const result = await createGetCatalogPageUseCase(apiClient)({
       page: 2,
       pageSize: 50,
       genre: 'Drama',
       sort: 'rating',
     });
 
-    expect(catalogService.getCatalogPage).toHaveBeenCalledWith({
+    expect(apiClient.getCatalogPage).toHaveBeenCalledWith({
       page: 2,
       pageSize: 50,
       genre: 'Drama',

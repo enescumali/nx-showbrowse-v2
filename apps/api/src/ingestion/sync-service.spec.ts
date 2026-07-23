@@ -6,7 +6,7 @@ import { createSyncService } from './sync-service';
 import { createShowStore } from '../store/show-store';
 import { readSnapshot } from './snapshot';
 import type { IShowApiClient } from '../tvmaze/client';
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 import type { RateLimiter } from './rate-limiter';
 
 function rawShow(id: number) {

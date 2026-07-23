@@ -2,6 +2,7 @@ import { ref, onMounted, watch } from 'vue';
 import type { Show, CatalogSort } from '@show-browse/shows';
 import { injectRequired, SHOWS_USE_CASES_KEY } from '../di/injection-keys';
 import { useAsyncState } from './useAsyncState';
+import { DEFAULT_PAGE_SIZE } from '../config';
 
 export interface UseShowCatalogOptions {
   genre?: string;
@@ -26,7 +27,7 @@ export function useShowCatalog(opts: UseShowCatalogOptions = {}) {
   // '' (unset) is a valid, bindable <select> value — converted to
   // undefined only at the API-call boundary, same as genre.
   const sort = ref<CatalogSort | ''>(opts.sort ?? '');
-  const requestedPageSize = ref(opts.pageSize);
+  const requestedPageSize = ref(opts.pageSize ?? DEFAULT_PAGE_SIZE);
 
   const shows = ref<Show[]>([]);
   const page = ref(opts.initialPage ?? 0);

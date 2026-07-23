@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createSearchShowsUseCase } from './search-shows.use-case';
-import type { ICatalogService } from '../services/catalog-service.interface';
-import type { Show } from '../entities/show.entity';
+import type { IBFFApiClient } from '../api/bff-api-client.interface';
+import type { Show } from '../types/show.types';
 
 function createMockService(
-  overrides: Partial<Pick<ICatalogService, 'searchShows'>> = {},
-): Pick<ICatalogService, 'searchShows'> {
+  overrides: Partial<Pick<IBFFApiClient, 'searchShows'>> = {},
+): Pick<IBFFApiClient, 'searchShows'> {
   return {
     searchShows: vi.fn().mockResolvedValue([]),
     ...overrides,

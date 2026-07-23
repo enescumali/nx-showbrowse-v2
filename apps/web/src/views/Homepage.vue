@@ -4,8 +4,8 @@ import { useRoute } from 'vue-router';
 import { useShowSearch } from '../composables/useShowSearch';
 import { useGenreCarousels } from '../composables/useGenreCarousels';
 import { useTopRatedShows } from '../composables/useTopRatedShows';
-import ShowCarousel from '../components/ShowCarousel.vue';
-import ShowThumbnailGrid from '../components/ShowThumbnailGrid.vue';
+import ShowCarousel from '../components/show/Carousel.vue';
+import ShowThumbnailGrid from '../components/show/ThumbnailGrid.vue';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
 
 const route = useRoute();

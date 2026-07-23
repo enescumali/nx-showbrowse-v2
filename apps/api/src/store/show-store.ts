@@ -1,5 +1,6 @@
-import type { Show } from '../tvmaze/entities';
+import type { Show } from '../types/show.types';
 import { groupShowsByGenre } from './group-shows-by-genre';
+import type { GenreGroup } from './group-shows-by-genre';
 
 export type SortOption = 'rating' | 'date' | 'title';
 
@@ -36,7 +37,7 @@ export interface IShowStore {
   replace(shows: Show[]): void;
   getAll(): Show[];
   /** limit slices each genre's shows (already rating-sorted); omit for the full group. */
-  getByGenre(limit?: number): [string, Show[]][];
+  getByGenre(limit?: number): GenreGroup[];
   /** Genre names + counts only, no show payloads — cheap even with many genres. */
   getGenreNames(): GenreSummary[];
   getPage(query: GetPageQuery): GetPageResult;
@@ -72,7 +73,7 @@ export function createShowStore(): IShowStore {
   // Cached once per replace() rather than recomputed per request — genre
   // grouping over ~89k shows isn't free, and /genres + /genres/names both
   // hit this now.
-  let genreGroups: [string, Show[]][] = [];
+  let genreGroups: GenreGroup[] = [];
   let meta: ShowStoreMeta = {
     ready: false,
     lastSyncedAt: null,
@@ -100,15 +101,18 @@ export function createShowStore(): IShowStore {
       return shows;
     },
 
-    getByGenre(limit?: number): [string, Show[]][] {
+    getByGenre(limit?: number): GenreGroup[] {
       if (limit === undefined) return genreGroups;
-      return genreGroups.map(([genre, list]) => [genre, list.slice(0, limit)]);
+      return genreGroups.map((g) => ({
+        genre: g.genre,
+        shows: g.shows.slice(0, limit),
+      }));
     },
 
     getGenreNames(): GenreSummary[] {
-      return genreGroups.map(([genre, list]) => ({
-        genre,
-        count: list.length,
+      return genreGroups.map((g) => ({
+        genre: g.genre,
+        count: g.shows.length,
       }));
     },
 

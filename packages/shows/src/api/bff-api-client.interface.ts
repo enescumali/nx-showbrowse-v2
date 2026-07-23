@@ -1,4 +1,4 @@
-import type { Show, ShowDetail } from '../entities/show.entity';
+import type { Show, ShowDetail } from '../types/show.types';
 
 export type CatalogSort = 'rating' | 'date' | 'title';
 
@@ -31,7 +31,7 @@ export interface GenreSummary {
  * Responses are already domain-shaped — apps/api mapped them during
  * ingestion — so unlike IShowApiClient there's no TVMaze-shape mapping
  * needed on this side. */
-export interface IBackendApiClient {
+export interface IBFFApiClient {
   getCatalogPage(query: CatalogQuery): Promise<CatalogPage>;
   getGenreGroups(limit?: number): Promise<GenreGroup[]>;
   getGenreNames(): Promise<GenreSummary[]>;

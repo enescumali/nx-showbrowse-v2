@@ -15,10 +15,7 @@ export function createGenresRoute(store: IShowStore) {
       return;
     }
 
-    const groups = store
-      .getByGenre(limit ?? DEFAULT_GENRE_LIMIT)
-      .map(([genre, shows]) => ({ genre, shows }));
-    res.status(200).json(groups);
+    res.status(200).json(store.getByGenre(limit ?? DEFAULT_GENRE_LIMIT));
   };
 }
 

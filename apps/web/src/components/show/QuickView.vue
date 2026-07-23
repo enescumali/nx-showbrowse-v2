@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
-import { useShowDetail } from '../composables/useShowDetail';
-import { useQuickView } from '../composables/useQuickView';
-import SkeletonBlock from './SkeletonBlock.vue';
-import ShowDetailContent from './ShowDetailContent.vue';
+import { useShowDetail } from '../../composables/useShowDetail';
+import { useQuickView } from '../../composables/useQuickView';
+import SkeletonBlock from '../SkeletonBlock.vue';
+import ShowDetailContent from './DetailContent.vue';
 
 // One instance per show id — App.vue mounts this with :key="id", so
 // switching shows while the panel is open re-fetches cleanly via a normal
@@ -41,9 +41,8 @@ const FOCUSABLE_SELECTOR =
 function trapFocus(e: KeyboardEvent) {
   if (e.key !== 'Tab' || !panelEl.value) return;
 
-  const focusable = panelEl.value.querySelectorAll<HTMLElement>(
-    FOCUSABLE_SELECTOR,
-  );
+  const focusable =
+    panelEl.value.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
   if (focusable.length === 0) return;
 
   const first = focusable[0];

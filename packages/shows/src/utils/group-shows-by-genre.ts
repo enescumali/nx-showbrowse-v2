@@ -1,6 +1,12 @@
-import type { Show } from '../entities/show.entity';
+import type { Show } from '../types/show.types';
+import type { GenreGroup } from '../api/bff-api-client.interface';
 
-export function groupShowsByGenre(shows: Show[]): [string, Show[]][] {
+// Same { genre, shows } shape apps/api's own genre grouping sends over the
+// wire for Home's carousels (see apps/api/src/routes/genres.route.ts) — so
+// Today's client-side grouping and Home's server-side grouping look
+// identical to whatever renders them, even though the two are independent
+// implementations (apps/web has no access to apps/api's server-only code).
+export function groupShowsByGenre(shows: Show[]): GenreGroup[] {
   const map = new Map<string, Show[]>();
 
   for (const show of shows) {
@@ -19,8 +25,8 @@ export function groupShowsByGenre(shows: Show[]): [string, Show[]][] {
 
   return [...map.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([genre, grouped]) => [
+    .map(([genre, grouped]) => ({
       genre,
-      [...grouped].sort((a, b) => b.rating - a.rating),
-    ]);
+      shows: [...grouped].sort((a, b) => b.rating - a.rating),
+    }));
 }

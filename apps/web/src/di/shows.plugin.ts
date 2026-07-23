@@ -1,7 +1,6 @@
 import type { App } from 'vue';
 import {
-  createBackendApiClient,
-  createCatalogService,
+  createBFFApiClient,
   createGetCatalogPageUseCase,
   createGetGenreGroupsUseCase,
   createGetGenreNamesUseCase,
@@ -11,13 +10,13 @@ import {
 } from '@show-browse/shows';
 import { SHOWS_USE_CASES_KEY } from './injection-keys';
 
-function getBaseUrl(): string {
+function getBFFAPIBaseUrl(): string {
   // Points at apps/api (our backend-for-frontend), not TVMaze directly.
-  const url = import.meta.env.VITE_API_BASE_URL;
+  const url = import.meta.env.VITE_BFF_API_BASE_URL;
 
   if (!url) {
     throw new Error(
-      'VITE_API_BASE_URL is required in production. Set it in your .env file.',
+      'VITE_BFF_API_BASE_URL is required in production. Set it in your .env file.',
     );
   }
 
@@ -26,16 +25,15 @@ function getBaseUrl(): string {
 
 export const showsPlugin = {
   install(app: App): void {
-    const apiClient = createBackendApiClient(getBaseUrl());
-    const catalogService = createCatalogService(apiClient);
+    const apiClient = createBFFApiClient(getBFFAPIBaseUrl());
 
-    const getCatalogPageUseCase = createGetCatalogPageUseCase(catalogService);
-    const getGenreGroupsUseCase = createGetGenreGroupsUseCase(catalogService);
-    const getGenreNamesUseCase = createGetGenreNamesUseCase(catalogService);
-    const getShowDetailUseCase = createGetShowDetailUseCase(catalogService);
-    const searchShowsUseCase = createSearchShowsUseCase(catalogService);
+    const getCatalogPageUseCase = createGetCatalogPageUseCase(apiClient);
+    const getGenreGroupsUseCase = createGetGenreGroupsUseCase(apiClient);
+    const getGenreNamesUseCase = createGetGenreNamesUseCase(apiClient);
+    const getShowDetailUseCase = createGetShowDetailUseCase(apiClient);
+    const searchShowsUseCase = createSearchShowsUseCase(apiClient);
     const getShowsByCountryUseCase =
-      createGetShowsByCountryUseCase(catalogService);
+      createGetShowsByCountryUseCase(apiClient);
 
     app.provide(SHOWS_USE_CASES_KEY, {
       getCatalogPage: (query) => getCatalogPageUseCase(query),

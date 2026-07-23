@@ -2,7 +2,7 @@
 import { RouterView } from 'vue-router';
 import NavBar from '../components/NavBar.vue';
 import ErrorBoundary from '../components/ErrorBoundary.vue';
-import ShowQuickView from '../components/ShowQuickView.vue';
+import ShowQuickView from '../components/show/QuickView.vue';
 import { useQuickView } from '../composables/useQuickView';
 
 const { activeShowId } = useQuickView();

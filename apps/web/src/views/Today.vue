@@ -2,8 +2,8 @@
 import { onMounted } from 'vue';
 import { useCountryShows } from '../composables/useCountryShows';
 import { useGenreGroups } from '../composables/useGenreGroups';
-import { COUNTRIES } from '../config/countries';
-import ShowCarousel from '../components/ShowCarousel.vue';
+import { COUNTRIES } from '../config';
+import ShowCarousel from '../components/show/Carousel.vue';
 
 const {
   selectedCountry,
@@ -80,7 +80,7 @@ onMounted(() => {
 
     <template v-else>
       <ShowCarousel
-        v-for="[genre, shows] in genreGroups"
+        v-for="{ genre, shows } in genreGroups"
         :key="genre"
         :genre="genre"
         :shows="shows"
