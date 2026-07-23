@@ -26,7 +26,7 @@ export function useShowCatalog(opts: UseShowCatalogOptions = {}) {
   // '' (unset) is a valid, bindable <select> value — converted to
   // undefined only at the API-call boundary, same as genre.
   const sort = ref<CatalogSort | ''>(opts.sort ?? '');
-  const requestedPageSize = opts.pageSize;
+  const requestedPageSize = ref(opts.pageSize);
 
   const shows = ref<Show[]>([]);
   const page = ref(opts.initialPage ?? 0);
@@ -39,7 +39,7 @@ export function useShowCatalog(opts: UseShowCatalogOptions = {}) {
       () =>
         useCases.getCatalogPage({
           page: targetPage,
-          pageSize: requestedPageSize,
+          pageSize: requestedPageSize.value,
           genre: genre.value || undefined,
           sort: sort.value || undefined,
         }),
@@ -73,9 +73,9 @@ export function useShowCatalog(opts: UseShowCatalogOptions = {}) {
     load(page.value);
   }
 
-  // Changing genre/sort restarts browsing from page 0 — a page number
-  // valid under the old filter may not exist under the new one.
-  watch([genre, sort], () => load(0));
+  // Changing genre/sort/pageSize restarts browsing from page 0 — a page
+  // number valid under the old filter/size may not exist under the new one.
+  watch([genre, sort, requestedPageSize], () => load(0));
 
   onMounted(() => load(page.value));
 
@@ -87,6 +87,7 @@ export function useShowCatalog(opts: UseShowCatalogOptions = {}) {
     totalPages,
     genre,
     sort,
+    requestedPageSize,
     loading,
     error,
     nextPage,

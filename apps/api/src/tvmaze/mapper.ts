@@ -1,9 +1,5 @@
 import type { Show, ShowDetail, CastMember } from './entities';
-import type {
-  TvMazeShow,
-  TvMazeShowWithCast,
-  TvMazeCastMember,
-} from './types';
+import type { TvMazeShow, TvMazeShowWithCast, TvMazeCastMember } from './types';
 
 export function mapShowToDomain(raw: TvMazeShow): Show {
   return {

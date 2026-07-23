@@ -16,6 +16,14 @@ function toSort(value: unknown): CatalogSort | '' {
     : '';
 }
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 250];
+const DEFAULT_PAGE_SIZE = 250;
+
+function toPageSize(value: unknown): number {
+  const parsed = Number(value);
+  return PAGE_SIZE_OPTIONS.includes(parsed) ? parsed : DEFAULT_PAGE_SIZE;
+}
+
 const {
   shows,
   page,
@@ -23,6 +31,7 @@ const {
   totalPages,
   genre,
   sort,
+  requestedPageSize,
   loading,
   error,
   nextPage,
@@ -33,6 +42,7 @@ const {
   initialPage: Number(route.query.page) || 0,
   genre: typeof route.query.genre === 'string' ? route.query.genre : '',
   sort: toSort(route.query.sort) || undefined,
+  pageSize: toPageSize(route.query.pageSize),
 });
 
 const { genreNames } = useGenreNames();
@@ -44,11 +54,14 @@ onMounted(() => {
 // Keep the URL in sync with page/genre/sort (deep links, back/forward,
 // shareable filtered/sorted views) — genre/sort now trigger a real,
 // global refetch via useShowCatalog, not a local re-render.
-watch([page, genre, sort], () => {
+watch([page, genre, sort, requestedPageSize], () => {
   const query: Record<string, string> = {};
   if (page.value) query.page = String(page.value);
   if (genre.value) query.genre = genre.value;
   if (sort.value) query.sort = sort.value;
+  if (requestedPageSize.value && requestedPageSize.value !== DEFAULT_PAGE_SIZE) {
+    query.pageSize = String(requestedPageSize.value);
+  }
   router.replace({ query });
 });
 
@@ -63,6 +76,11 @@ watch(
 
     const targetSort = toSort(q.sort);
     if (targetSort !== sort.value) sort.value = targetSort;
+
+    const targetPageSize = toPageSize(q.pageSize);
+    if (targetPageSize !== requestedPageSize.value) {
+      requestedPageSize.value = targetPageSize;
+    }
   },
 );
 
@@ -111,6 +129,18 @@ function submitJump() {
           <option value="rating">Rating (high to low)</option>
           <option value="date">Release date (newest first)</option>
           <option value="title">Title (A–Z)</option>
+        </select>
+      </label>
+
+      <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
+        Per page
+        <select
+          v-model.number="requestedPageSize"
+          class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
+        >
+          <option v-for="size in PAGE_SIZE_OPTIONS" :key="size" :value="size">
+            {{ size }}
+          </option>
         </select>
       </label>
     </div>

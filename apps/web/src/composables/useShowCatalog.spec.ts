@@ -175,6 +175,37 @@ describe('useShowCatalog', () => {
     });
   });
 
+  it('changing pageSize resets to page 0 and refetches with the new size', async () => {
+    const getCatalogPage = vi
+      .fn()
+      .mockResolvedValueOnce(page([], 0, 5))
+      .mockResolvedValueOnce(page([], 3, 5))
+      .mockResolvedValueOnce(page([], 0, 2));
+    const useCases = makeUseCases({ getCatalogPage });
+
+    const {
+      goToPage,
+      requestedPageSize,
+      page: pageRef,
+    } = mountComposable(useShowCatalog, useCases);
+    await flushPromises();
+
+    goToPage(3);
+    await flushPromises();
+    expect(pageRef.value).toBe(3);
+
+    requestedPageSize.value = 25;
+    await flushPromises();
+
+    expect(pageRef.value).toBe(0);
+    expect(getCatalogPage).toHaveBeenLastCalledWith({
+      page: 0,
+      pageSize: 25,
+      genre: undefined,
+      sort: undefined,
+    });
+  });
+
   it('changing sort resets to page 0 and refetches', async () => {
     const getCatalogPage = vi
       .fn()
