@@ -1,4 +1,5 @@
-import { createShowApiClient, createShowService } from '@show-browse/shows';
+import { createShowApiClient } from '../tvmaze/client';
+import { createShowService } from '../tvmaze/service';
 import { createShowStore } from '../store/show-store';
 import { createRateLimiter } from '../ingestion/rate-limiter';
 import { createSyncService } from '../ingestion/sync-service';

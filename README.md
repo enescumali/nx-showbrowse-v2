@@ -60,23 +60,27 @@ The project is structured as an Nx monorepo with a strict separation between bus
 ```
 packages/
   shows/    # Pure TypeScript — zero framework dependencies
-              entities, mappers, use cases, and two independent client/service pairs:
-              - TVMaze-facing (IShowApiClient/IShowService) — used internally by apps/api
-              - apps/api-facing (IBackendApiClient/ICatalogService) — used by apps/web
+              entities, one client/service pair (apps/api-facing:
+              IBackendApiClient/ICatalogService), and use cases — all typed
+              against apps/api's HTTP contract, never TVMaze's
 apps/
   api/      # Node/Express backend-for-frontend
-              crawls & serves the full TVMaze catalog (see "Backend" below)
+              owns its entire TVMaze integration locally (apps/api/src/tvmaze/):
+              raw types, client, mapper, cached service, entities — none of it
+              shared with packages/shows (see "Backend" below)
   web/      # Vue 3 presentation layer
               components, composables, views, router, DI plugin
 ```
 
 ### Why a separate `packages` layer?
 
-The core data logic (fetching, mapping, caching) lives in `packages` (currently only `shows`) with no Vue imports. This means it can be unit-tested without a browser, reused in a different framework, or published as an npm package without changes. Both `apps/web` and `apps/api` consume it exclusively through the public API at `@show-browse/shows` — `apps/api` uses the TVMaze-facing client/service for its own live proxy routes and ingestion crawl; `apps/web` uses the apps/api-facing client/service, and never talks to TVMaze directly.
+The core data logic (fetching, mapping, caching) lives in `packages` (currently only `shows`) with no Vue imports. This means it can be unit-tested without a browser, reused in a different framework, or published as an npm package without changes. `apps/web` consumes it exclusively through the public API at `@show-browse/shows` and never talks to TVMaze directly. `apps/api` doesn't depend on it at all — its own TVMaze integration is entirely local (see below).
 
-### Why two client/service pairs instead of one?
+### Why apps/api's TVMaze integration lives locally instead of shared
 
-`IShowApiClient`/`IShowService` model TVMaze's actual shape (paginated but genre-blind, no totals). `IBackendApiClient`/`ICatalogService` model what apps/api actually offers (genre-aware, globally paginated, real totals) — a structurally different capability, not just a different base URL, so it's a separate interface rather than a mutation of the first one. The three read operations that _are_ identical in shape between them (`getShowById`/`searchShows`/`getShowsByCountry`) share the same use-case factories via a narrowed parameter type (`Pick<IShowService, 'getShowById'>`, etc.) instead of being duplicated.
+`packages/shows` represents exactly one upstream from `apps/web`'s point of view: `apps/api`'s HTTP contract. It has no business knowing `apps/api`'s data came from TVMaze, or sharing types with TVMaze's wire format — that would leak an implementation detail of one specific backend into a package meant to be provider-agnostic. So `apps/api` owns its complete TVMaze integration privately (`apps/api/src/tvmaze/`: raw types, `IShowApiClient`, mapper, cached `IShowService`, its own `Show`/`ShowDetail` entities) and `packages/shows` owns its own, independent `Show`/`ShowDetail` entities plus the client/service that talks to `apps/api`. Neither imports the other's data-source-facing code.
+
+The three read operations that happen to have identical signatures on both sides (`getShowById`/`searchShows`/`getShowsByCountry`) still share the same use-case factories in `packages/shows`, just narrowed to `Pick<ICatalogService, 'getShowById'>` etc. — a type-only reference to `packages/shows`'s own service interface, not to anything TVMaze-shaped.
 
 ### Why use cases instead of putting logic in composables?
 
@@ -92,10 +96,10 @@ Nx enforces hard boundaries between `packages/` and `apps/` at the linter level,
 
 ### Caching
 
-Both service implementations in `packages/shows` use the same simple in-memory TTL cache shape (managed via `CACHE_TTL_MS`, fallback 5 minutes), keyed per query:
+`apps/api`'s `tvmaze/service.ts` and `packages/shows`'s `catalog.service.ts` independently use the same simple in-memory TTL cache shape (managed via `CACHE_TTL_MS`, fallback 5 minutes), keyed per query — same pattern, no shared code:
 
-- `show.service.ts` (TVMaze-facing, used by `apps/api`'s live proxy routes) — per TVMaze page (`shows:0`, `shows:1`, ...), per show id, per country.
-- `catalog.service.ts` (apps/api-facing, used by `apps/web`) — per exact `{page,pageSize,genre,sort}` query, per genre-groups `limit`, per show id, per country. Search is never cached in either — repeatedly searching the same term should reflect current results, not stale ones.
+- `apps/api/src/tvmaze/service.ts` (backs apps/api's own live-proxy routes) — per show id, per country.
+- `packages/shows/src/services/catalog.service.ts` (used by `apps/web`) — per exact `{page,pageSize,genre,sort}` query, per genre-groups `limit`, per show id, per country. Search is never cached in either — repeatedly searching the same term should reflect current results, not stale ones.
 
 ### Why "Browse by Genre" and "All Shows" are separate pages
 
@@ -110,6 +114,8 @@ Since `apps/api`'s `/shows` always returns a real `totalPages` (unlike TVMaze), 
 
 A small backend-for-frontend that periodically crawls TVMaze's **full** show index into memory, so genre-grouping, global sorting, and real pagination can all be correct **at the same time** — `apps/web` consumes it exclusively and never talks to TVMaze directly for the bulk catalog.
 
+`apps/api` owns its complete TVMaze integration locally (`apps/api/src/tvmaze/`: raw wire types, `IShowApiClient`, mapper, cached `IShowService`, its own `Show`/`ShowDetail`/`CastMember` entities) rather than importing any of it from `packages/shows` — its HTTP contract is its own, independent of whatever `packages/shows`'s `Show`/`ShowDetail` types happen to look like. `apps/api/src/store/group-shows-by-genre.ts` is likewise its own local copy, not shared with the client-side grouping util `packages/shows` still exposes for `apps/web`'s Today page.
+
 **How it works:**
 
 - On boot, it loads a JSON snapshot from disk (if one exists) for an instant warm start, then serves immediately — `/health` always returns 200 so it never looks "down" during a crawl, while `/genres`, `/genres/names`, and `/shows` return 503 until the store is populated.
@@ -118,7 +124,7 @@ A small backend-for-frontend that periodically crawls TVMaze's **full** show ind
 - Every successful crawl atomically swaps the in-memory store (`apps/api/src/store/show-store.ts`) and writes a new JSON snapshot (write-to-temp-file-then-rename, so a crash mid-write can't corrupt it) — a failed crawl never touches what's currently being served.
 - `GET /genres?limit=` returns each genre's top-N shows by rating (default 20) — deliberately bounded, since a genre can have tens of thousands of shows and Home only ever needs a curated row. `GET /genres/names` returns just `{genre, count}[]`, no show payloads, for NavBar's nav links.
 - `GET /shows?page=&pageSize=&genre=&sort=` is the one exhaustive, paginated endpoint — global filter + sort + pagination with correct totals, backing Catalog, Genre, and Popular.
-- `GET /shows/:id`, `GET /search`, and `GET /schedule/:country` are **not** bulk-crawled (embedding cast info for ~89k shows would blow the rate limit for no benefit) — they proxy live to TVMaze, reusing the exact same tested TVMaze-facing `IShowService`/`createShowApiClient` from `packages/shows`.
+- `GET /shows/:id`, `GET /search`, and `GET /schedule/:country` are **not** bulk-crawled (embedding cast info for ~89k shows would blow the rate limit for no benefit) — they proxy live to TVMaze, reusing apps/api's own local `IShowService`/`createShowApiClient` (`apps/api/src/tvmaze/`).
 - `POST /admin/refresh` (guarded by an `X-Admin-Token` header) triggers a sync on demand instead of waiting for the daily schedule — useful for local testing/demoing.
 - A small permissive CORS middleware (`apps/api/src/middleware/cors.ts`) lets the browser-based `apps/web` call across origins/ports — no cookies/credentials are involved, so this is deliberately simple rather than pulling in the `cors` package.
 

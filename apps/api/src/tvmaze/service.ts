@@ -1,12 +1,18 @@
-import type { Show, ShowDetail } from '../entities/show.entity';
-import type { IShowService } from './show-service.interface';
-import type { IShowApiClient } from '../api/show-api-client.interface';
-import {
-  mapShowToDomain,
-  mapShowWithCastToDomain,
-} from '../mappers/show.mapper';
+import type { Show, ShowDetail } from './entities';
+import type { IShowApiClient } from './client';
+import { mapShowToDomain, mapShowWithCastToDomain } from './mapper';
 
-// Read cache TTL from environment variable if available, fallback to 5 min
+/** Backs apps/api's three live-proxy routes (/shows/:id, /search,
+ * /schedule/:country) only — the bulk-crawled index goes through the raw
+ * IShowApiClient directly (ingestion/crawl-shows.ts), bypassing this cache,
+ * since each page is only ever fetched once per crawl anyway. That's why
+ * there's no getShows(page) here, unlike the raw client. */
+export interface IShowService {
+  getShowById(id: string | number): Promise<ShowDetail>;
+  searchShows(query: string): Promise<Show[]>;
+  getShowsByCountry(country: string): Promise<Show[]>;
+}
+
 const CACHE_TTL_MS =
   typeof process !== 'undefined' && process.env && process.env.CACHE_TTL_MS
     ? parseInt(process.env.CACHE_TTL_MS, 10)
@@ -30,34 +36,10 @@ function createCache<T>() {
 }
 
 export function createShowService(apiClient: IShowApiClient): IShowService {
-  const showsCache = createCache<Show[]>();
   const detailCache = createCache<ShowDetail>();
   const countryCache = createCache<Show[]>();
 
   return {
-    async getShows(page = 0): Promise<Show[]> {
-      const cacheKey = `shows:${page}`;
-      const cached = showsCache.get(cacheKey);
-      if (cached) return cached;
-
-      // Check for ?delay param in the URL to enable
-      // artificial delay for testing
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('delay')) {
-          const ms = parseInt(url.searchParams.get('delay') || '3000', 10);
-          if (!isNaN(ms) && ms > 0) {
-            await new Promise((r) => setTimeout(r, ms));
-          }
-        }
-      }
-
-      const shows = await apiClient.getShows(page);
-      const result = shows.map(mapShowToDomain);
-      showsCache.set(cacheKey, result);
-      return result;
-    },
-
     async getShowById(id: string | number): Promise<ShowDetail> {
       const key = `detail:${id}`;
       const cached = detailCache.get(key);
@@ -83,8 +65,8 @@ export function createShowService(apiClient: IShowApiClient): IShowService {
       if (cached) return cached;
 
       const episodes = await apiClient.getSchedule(country);
-      // Use a Set to avoid duplicate shows
-      // as multiple episodes of the same show can be in the schedule
+      // Use a Set to avoid duplicate shows, as multiple episodes of the
+      // same show can appear in the schedule.
       const seen = new Set<number>();
       const shows: Show[] = [];
 

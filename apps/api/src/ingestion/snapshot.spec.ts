@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readSnapshot, writeSnapshot } from './snapshot';
-import type { Show } from '@show-browse/shows';
+import type { Show } from '../tvmaze/entities';
 
 const sampleShows: Show[] = [
   {

@@ -1,4 +1,4 @@
-import type { IShowApiClient } from '@show-browse/shows';
+import type { IShowApiClient } from '../tvmaze/client';
 import type { IShowStore } from '../store/show-store';
 import type { RateLimiter } from './rate-limiter';
 import { crawlShows } from './crawl-shows';

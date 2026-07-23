@@ -1,16 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createGetShowDetailUseCase } from './get-show-detail.use-case';
-import type { IShowService } from '../services/show-service.interface';
+import type { ICatalogService } from '../services/catalog-service.interface';
 import type { Show, ShowDetail } from '../entities/show.entity';
 
 function createMockService(
-  overrides: Partial<IShowService> = {},
-): IShowService {
+  overrides: Partial<Pick<ICatalogService, 'getShowById'>> = {},
+): Pick<ICatalogService, 'getShowById'> {
   return {
-    getShows: vi.fn().mockResolvedValue([]),
     getShowById: vi.fn().mockResolvedValue({} as ShowDetail),
-    searchShows: vi.fn().mockResolvedValue([]),
-    getShowsByCountry: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }

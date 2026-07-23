@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { crawlShows } from './crawl-shows';
-import type { IShowApiClient } from '@show-browse/shows';
+import type { IShowApiClient } from '../tvmaze/client';
 import type { RateLimiter } from './rate-limiter';
 
 function rawShow(id: number) {

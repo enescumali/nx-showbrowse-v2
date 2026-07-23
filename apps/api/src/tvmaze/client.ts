@@ -3,8 +3,16 @@ import type {
   TvMazeShowWithCast,
   TvMazeSearchResult,
   TvMazeScheduleEpisode,
-} from './tvmaze.types';
-import type { IShowApiClient } from './show-api-client.interface';
+} from './types';
+
+/** apps/api's own TVMaze integration — independent of packages/shows, which
+ * only ever knows about apps/api's HTTP contract, never TVMaze's. */
+export interface IShowApiClient {
+  getShows(page: number): Promise<TvMazeShow[]>;
+  getShowById(id: string | number): Promise<TvMazeShowWithCast>;
+  searchShows(query: string): Promise<TvMazeSearchResult[]>;
+  getSchedule(country: string): Promise<TvMazeScheduleEpisode[]>;
+}
 
 export function createShowApiClient(baseURL: string): IShowApiClient {
   async function fetchJson<T>(

@@ -8,7 +8,6 @@ import type {
 } from '../api/backend-api-client.interface';
 import type { ICatalogService } from './catalog-service.interface';
 
-// Same TTL cache approach as show.service.ts.
 const CACHE_TTL_MS =
   typeof process !== 'undefined' && process.env && process.env.CACHE_TTL_MS
     ? parseInt(process.env.CACHE_TTL_MS, 10)

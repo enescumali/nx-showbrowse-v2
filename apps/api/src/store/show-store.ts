@@ -1,5 +1,5 @@
-import type { Show } from '@show-browse/shows';
-import { groupShowsByGenre } from '@show-browse/shows';
+import type { Show } from '../tvmaze/entities';
+import { groupShowsByGenre } from './group-shows-by-genre';
 
 export type SortOption = 'rating' | 'date' | 'title';
 

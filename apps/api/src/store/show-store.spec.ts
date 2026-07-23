@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createShowStore } from './show-store';
-import type { Show } from '@show-browse/shows';
+import type { Show } from '../tvmaze/entities';
 
 function show(
   id: number | string,

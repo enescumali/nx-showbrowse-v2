@@ -3,12 +3,8 @@ import {
   mapShowToDomain,
   mapCastMemberToDomain,
   mapShowWithCastToDomain,
-} from './show.mapper';
-import type {
-  TvMazeShow,
-  TvMazeShowWithCast,
-  TvMazeCastMember,
-} from '../api/tvmaze.types';
+} from './mapper';
+import type { TvMazeShow, TvMazeShowWithCast, TvMazeCastMember } from './types';
 
 const baseRaw: TvMazeShow = {
   id: 1,

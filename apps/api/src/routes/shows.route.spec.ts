@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createListShowsRoute, createShowDetailRoute } from './shows.route';
 import { mockReq, mockRes } from '../test-utils/mock-http';
 import type { IShowStore } from '../store/show-store';
-import type { IShowService } from '@show-browse/shows';
+import type { IShowService } from '../tvmaze/service';
 
 function makeStore(overrides: Partial<IShowStore> = {}): IShowStore {
   return {
@@ -108,7 +108,6 @@ describe('createListShowsRoute', () => {
 
 function makeShowService(overrides: Partial<IShowService> = {}): IShowService {
   return {
-    getShows: vi.fn().mockResolvedValue([]),
     getShowById: vi.fn(),
     searchShows: vi.fn().mockResolvedValue([]),
     getShowsByCountry: vi.fn().mockResolvedValue([]),
@@ -150,5 +149,17 @@ describe('createShowDetailRoute', () => {
     await route(req, res);
 
     expect(res.status).toHaveBeenCalledWith(502);
+  });
+
+  it('400s on a missing id without calling the service', async () => {
+    const getShowById = vi.fn();
+    const route = createShowDetailRoute(makeShowService({ getShowById }));
+    const req = mockReq({ params: {} });
+    const res = mockRes();
+
+    await route(req, res);
+
+    expect(getShowById).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
   });
 });

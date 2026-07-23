@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { IShowService } from '@show-browse/shows';
+import type { IShowService } from '../tvmaze/service';
 import type { IShowStore, SortOption } from '../store/show-store';
 import { paramToString, parseIntParam } from '../utils/param';
 
@@ -40,8 +40,14 @@ export function createShowDetailRoute(showService: IShowService) {
     req: Request,
     res: Response,
   ): Promise<void> {
+    const id = paramToString(req.params.id);
+    if (!id) {
+      res.status(400).json({ error: 'Show ID is required' });
+      return;
+    }
+
     try {
-      const show = await showService.getShowById(paramToString(req.params.id));
+      const show = await showService.getShowById(id);
       res.status(200).json(show);
     } catch (err) {
       const message =

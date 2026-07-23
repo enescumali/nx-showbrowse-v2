@@ -1,15 +1,8 @@
 // Entities
 export type { Show, ShowDetail, CastMember } from './entities/show.entity';
 
-// Repository interface
-export type { IShowService } from './services/show-service.interface';
-
-// Service factory
-export { createShowService } from './services/show.service';
-
-// API client (TVMaze-facing — used internally by apps/api)
-export { createShowApiClient } from './api/show-api.client';
-export type { IShowApiClient } from './api/show-api-client.interface';
+// Utils
+export { groupShowsByGenre } from './utils/group-shows-by-genre';
 
 // API client (apps/api-facing — used by apps/web)
 export { createBackendApiClient } from './api/backend-api.client';
@@ -26,13 +19,6 @@ export type {
 export { createCatalogService } from './services/catalog.service';
 export type { ICatalogService } from './services/catalog-service.interface';
 
-// Mappers
-export {
-  mapShowToDomain,
-  mapCastMemberToDomain,
-  mapShowWithCastToDomain,
-} from './mappers/show.mapper';
-
 // Use case factories
 export { createGetShowDetailUseCase } from './use-cases/get-show-detail.use-case';
 export { createSearchShowsUseCase } from './use-cases/search-shows.use-case';
@@ -48,6 +34,3 @@ export type { GetShowsByCountryUseCase } from './use-cases/get-shows-by-country.
 export type { GetCatalogPageUseCase } from './use-cases/get-catalog-page.use-case';
 export type { GetGenreGroupsUseCase } from './use-cases/get-genre-groups.use-case';
 export type { GetGenreNamesUseCase } from './use-cases/get-genre-names.use-case';
-
-// Utils
-export { groupShowsByGenre } from './utils/group-shows-by-genre';

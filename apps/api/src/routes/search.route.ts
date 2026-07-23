@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { IShowService } from '@show-browse/shows';
+import type { IShowService } from '../tvmaze/service';
 
 /** Proxied live to TVMaze — their fuzzy search is the whole point, not
  * something worth reimplementing over the bulk-crawled index. */

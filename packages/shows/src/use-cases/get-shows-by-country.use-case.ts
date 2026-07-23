@@ -1,9 +1,10 @@
 import type { Show } from '../entities/show.entity';
-import type { IShowService } from '../services/show-service.interface';
+import type { ICatalogService } from '../services/catalog-service.interface';
 
-/** Narrowed to just getShowsByCountry — reusable against ICatalogService too. */
+/** Narrowed to just getShowsByCountry so this use-case only depends on the
+ * one method it actually calls, not the full ICatalogService shape. */
 export function createGetShowsByCountryUseCase(
-  showService: Pick<IShowService, 'getShowsByCountry'>,
+  showService: Pick<ICatalogService, 'getShowsByCountry'>,
 ) {
   return async function getShowsByCountry(country: string): Promise<Show[]> {
     if (!country.trim()) throw new Error('Country code must not be empty');

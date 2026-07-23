@@ -1,5 +1,6 @@
-import type { IShowApiClient, Show } from '@show-browse/shows';
-import { mapShowToDomain } from '@show-browse/shows';
+import type { IShowApiClient } from '../tvmaze/client';
+import type { Show } from '../tvmaze/entities';
+import { mapShowToDomain } from '../tvmaze/mapper';
 import type { RateLimiter } from './rate-limiter';
 
 export interface CrawlOptions {

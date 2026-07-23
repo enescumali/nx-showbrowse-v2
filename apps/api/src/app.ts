@@ -1,5 +1,5 @@
 import express, { type Express } from 'express';
-import type { IShowService } from '@show-browse/shows';
+import type { IShowService } from './tvmaze/service';
 import type { IShowStore } from './store/show-store';
 import type { ISyncService } from './ingestion/sync-service';
 import { createReadinessGate } from './middleware/readiness';

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createGenresRoute, createGenreNamesRoute } from './genres.route';
 import { mockReq, mockRes } from '../test-utils/mock-http';
 import type { IShowStore } from '../store/show-store';
-import type { Show } from '@show-browse/shows';
+import type { Show } from '../tvmaze/entities';
 
 function show(id: number, genres: string[]): Show {
   return {

@@ -1,11 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createScheduleRoute } from './schedule.route';
 import { mockReq, mockRes } from '../test-utils/mock-http';
-import type { IShowService } from '@show-browse/shows';
+import type { IShowService } from '../tvmaze/service';
 
 function makeShowService(overrides: Partial<IShowService> = {}): IShowService {
   return {
-    getShows: vi.fn().mockResolvedValue([]),
     getShowById: vi.fn(),
     searchShows: vi.fn().mockResolvedValue([]),
     getShowsByCountry: vi.fn().mockResolvedValue([]),
@@ -40,5 +39,17 @@ describe('createScheduleRoute', () => {
     await route(req, res);
 
     expect(res.status).toHaveBeenCalledWith(502);
+  });
+
+  it('400s on a missing country without calling the service', async () => {
+    const getShowsByCountry = vi.fn();
+    const route = createScheduleRoute(makeShowService({ getShowsByCountry }));
+    const req = mockReq({ params: {} });
+    const res = mockRes();
+
+    await route(req, res);
+
+    expect(getShowsByCountry).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
   });
 });
