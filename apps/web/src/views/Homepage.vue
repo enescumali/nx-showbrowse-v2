@@ -45,7 +45,7 @@ watch(searchQuery, (q) => search(q), { immediate: true });
 </script>
 
 <template>
-  <main class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
+  <main id="main-content" tabindex="-1" class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
     <!-- Search mode -->
     <template v-if="isSearchMode">
       <h1 class="text-2xl font-bold text-text mb-6">
@@ -61,7 +61,7 @@ watch(searchQuery, (q) => search(q), { immediate: true });
       </div>
       <div
         v-else-if="searchError"
-        class="text-center py-12 text-brand text-lg"
+        class="text-center py-12 text-brand-text text-lg"
         role="alert"
       >
         {{ searchError }}
@@ -99,13 +99,13 @@ watch(searchQuery, (q) => search(q), { immediate: true });
       </div>
       <div
         v-else-if="error"
-        class="text-center py-12 text-brand text-lg"
+        class="text-center py-12 text-brand-text text-lg"
         role="alert"
       >
         {{ error }}
         <br />
         <button
-          class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
+          class="mt-4 px-5 py-2 border border-brand rounded text-brand-text bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
           @click="reload()"
         >
           Try again

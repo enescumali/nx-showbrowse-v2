@@ -82,7 +82,7 @@ onUnmounted(() => {
         {{ show.title }}
       </h3>
       <p class="text-xs text-text-subtle m-0">{{ show.releaseDate }}</p>
-      <span class="text-xs text-brand font-medium"
+      <span class="text-xs text-brand-text font-medium"
         >⭐ {{ show.rating.toFixed(1) }}</span
       >
     </div>

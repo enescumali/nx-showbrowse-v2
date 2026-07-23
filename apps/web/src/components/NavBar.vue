@@ -127,7 +127,7 @@ function onBlur() {
           :class="
             route.name === 'Today'
               ? 'bg-brand text-white border-brand'
-              : 'bg-brand/10 text-brand border-brand/40 hover:bg-brand/20'
+              : 'bg-brand/10 text-brand-text border-brand/40 hover:bg-brand/20'
           "
           >On TV Today</RouterLink
         >
@@ -196,7 +196,9 @@ function onBlur() {
       <button
         type="button"
         class="hidden md:inline-flex bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
-        :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        :aria-label="
+          theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+        "
         @click="toggleTheme"
       >
         <svg
@@ -322,7 +324,7 @@ function onBlur() {
       >
       <RouterLink
         to="/today"
-        class="self-start mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold no-underline border bg-brand/10 text-brand border-brand/40"
+        class="self-start mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold no-underline border bg-brand/10 text-brand-text border-brand/40"
         active-class="bg-brand text-white border-brand"
         @click="closeMenu"
         >On TV Today</RouterLink

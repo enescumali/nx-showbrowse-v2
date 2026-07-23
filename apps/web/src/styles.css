@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Light values are the defaults; .dark overrides them below. Every
    color utility here (bg-surface, text-text-muted, etc.) is generated
@@ -7,6 +7,13 @@
 @theme {
   --color-brand: #e50914;
   --color-brand-hover: #b20710;
+  /* The brand red as literal text (rating badges, links, error copy) needs
+     its own tuning per theme — #e50914 falls short of WCAG AA (4.5:1) for
+     small text against the card/card-alt tones in *both* themes, so this
+     is deliberately darker in light mode and brighter in dark mode rather
+     than reusing --color-brand as-is. --color-brand itself is unchanged —
+     it's fine as a solid button/pill fill with white text on top. */
+  --color-brand-text: #b20710;
 
   --color-surface: #ffffff;
   --color-card: #f2f2f2;
@@ -23,6 +30,8 @@
 }
 
 .dark {
+  --color-brand-text: #ff5c4d;
+
   --color-surface: #141414;
   --color-card: #1f1f1f;
   --color-card-alt: #2a2a2a;
@@ -37,7 +46,8 @@
   --color-text-strong: #ffffff;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background-color: var(--color-surface);

@@ -50,7 +50,7 @@ onUnmounted(() => {
       <RouterLink
         v-if="seeAllTo"
         :to="seeAllTo"
-        class="text-sm text-brand no-underline hover:underline shrink-0"
+        class="text-sm text-brand-text no-underline hover:underline shrink-0"
         >See all ›</RouterLink
       >
     </div>

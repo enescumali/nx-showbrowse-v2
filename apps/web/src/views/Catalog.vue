@@ -89,7 +89,7 @@ watch(
 </script>
 
 <template>
-  <main class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
+  <main id="main-content" tabindex="-1" class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
     <header class="mb-6">
       <h1 class="text-3xl font-bold text-text m-0">All Shows</h1>
       <p class="text-text-subtle text-sm mt-1">
@@ -98,9 +98,7 @@ watch(
       </p>
     </header>
 
-    <div
-      class="flex flex-wrap items-center gap-3 mb-6 rounded-lg bg-card p-3"
-    >
+    <div class="flex flex-wrap items-center gap-3 mb-6 rounded-lg bg-card p-3">
       <label class="flex items-center gap-2 text-sm text-text-muted">
         Genre
         <select
@@ -157,13 +155,13 @@ watch(
     <!-- No page has ever loaded successfully -->
     <div
       v-else-if="error && shows.length === 0"
-      class="text-center py-6 text-brand"
+      class="text-center py-6 text-brand-text"
       role="alert"
     >
       {{ error }}
       <br />
       <button
-        class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
+        class="mt-4 px-5 py-2 border border-brand rounded text-brand-text bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
         @click="reload"
       >
         Try again
@@ -174,7 +172,7 @@ watch(
       <!-- A later page failed, but we still have a previous page to show -->
       <div
         v-if="error"
-        class="mb-4 rounded border border-brand/40 bg-brand/10 text-brand text-sm px-3 py-2"
+        class="mb-4 rounded border border-brand/40 bg-brand/10 text-brand-text text-sm px-3 py-2"
         role="alert"
       >
         Couldn't load that page ({{ error }}). Still showing page
@@ -202,7 +200,11 @@ watch(
           >
             ‹ Prev
           </button>
-          <span class="text-sm text-text-muted" role="status" aria-live="polite">
+          <span
+            class="text-sm text-text-muted"
+            role="status"
+            aria-live="polite"
+          >
             <template v-if="loading">Loading…</template>
             <template v-else>{{ page + 1 }} of {{ totalPages }}</template>
           </span>

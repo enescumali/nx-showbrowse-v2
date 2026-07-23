@@ -17,7 +17,7 @@ onErrorCaptured((err) => {
     class="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4"
     role="alert"
   >
-    <p class="text-brand text-xl font-semibold">Something went wrong</p>
+    <p class="text-brand-text text-xl font-semibold">Something went wrong</p>
     <p class="text-text-subtle text-sm text-center max-w-md">
       An unexpected error occurred. We are working on it!
     </p>

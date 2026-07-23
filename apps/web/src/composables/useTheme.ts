@@ -19,18 +19,19 @@ let theme: Ref<Theme> | null = null;
 function getTheme(): Ref<Theme> {
   if (theme) return theme;
 
-  theme = ref<Theme>(getInitialTheme());
+  const themeRef = ref<Theme>(getInitialTheme());
+  theme = themeRef;
   watchEffect(
     () => {
       document.documentElement.classList.toggle(
         'dark',
-        theme!.value === 'dark',
+        themeRef.value === 'dark',
       );
-      localStorage.setItem(STORAGE_KEY, theme!.value);
+      localStorage.setItem(STORAGE_KEY, themeRef.value);
     },
     { flush: 'sync' },
   );
-  return theme;
+  return themeRef;
 }
 
 export function useTheme() {

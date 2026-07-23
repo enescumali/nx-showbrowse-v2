@@ -30,9 +30,9 @@ watch(error, (msg) => {
 </script>
 
 <template>
-  <main class="max-w-4xl mx-auto px-4 pt-20 pb-6">
+  <main id="main-content" tabindex="-1" class="max-w-4xl mx-auto px-4 pt-20 pb-6">
     <button
-      class="border border-brand text-brand bg-transparent px-4 py-1.5 rounded cursor-pointer text-sm mb-6 transition-colors hover:bg-brand hover:text-white"
+      class="border border-brand text-brand-text bg-transparent px-4 py-1.5 rounded cursor-pointer text-sm mb-6 transition-colors hover:bg-brand hover:text-white"
       @click="router.back()"
       aria-label="Go back"
     >
@@ -67,15 +67,11 @@ watch(error, (msg) => {
       </div>
     </div>
 
-    <div
-      v-else-if="error"
-      class="text-center py-12 text-brand"
-      role="alert"
-    >
+    <div v-else-if="error" class="text-center py-12 text-brand-text" role="alert">
       {{ error }}
       <br />
       <button
-        class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
+        class="mt-4 px-5 py-2 border border-brand rounded text-brand-text bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
         @click="router.back()"
       >
         Go back

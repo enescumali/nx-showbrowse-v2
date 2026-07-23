@@ -21,7 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="max-w-[1400px] mx-auto px-4 pb-8">
+  <main id="main-content" tabindex="-1" class="max-w-[1400px] mx-auto px-4 pb-8">
     <header class="pt-20 mb-8 flex flex-col sm:flex-row sm:items-end gap-4">
       <div>
         <h1 class="text-3xl font-bold text-text m-0">On TV Today</h1>
@@ -61,7 +61,7 @@ onMounted(() => {
 
     <div
       v-else-if="countryError"
-      class="text-center py-12 text-brand text-lg"
+      class="text-center py-12 text-brand-text text-lg"
       role="alert"
     >
       {{ countryError }}

@@ -8,7 +8,6 @@ export function makeShow(
   overrides: Partial<Show> & { id: number; genres: string[] },
 ): Show {
   return {
-    id: overrides.id,
     title: `Show ${overrides.id}`,
     showType: 'Scripted',
     overview: '',
@@ -16,7 +15,6 @@ export function makeShow(
     backdropUrl: '',
     releaseDate: '',
     rating: 7,
-    genres: [],
     ...overrides,
   };
 }

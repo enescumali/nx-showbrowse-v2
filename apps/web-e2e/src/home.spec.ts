@@ -14,9 +14,7 @@ test.describe('Home page', () => {
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Main navigation' });
     await expect(nav.getByRole('link', { name: 'All Shows' })).toBeVisible();
-    await expect(
-      nav.getByRole('link', { name: 'On TV Today' }),
-    ).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'On TV Today' })).toBeVisible();
   });
 
   test('a genre row\'s "See all" link navigates to Catalog filtered by that genre', async ({

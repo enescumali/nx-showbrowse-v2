@@ -8,10 +8,16 @@ import type {
 } from '../api/backend-api-client.interface';
 import type { ICatalogService } from './catalog-service.interface';
 
-const CACHE_TTL_MS =
-  typeof process !== 'undefined' && process.env && process.env.CACHE_TTL_MS
-    ? parseInt(process.env.CACHE_TTL_MS, 10)
-    : 5 * 60 * 1000;
+// Read via globalThis (rather than the bare `process` identifier) so this
+// stays type-safe under both apps/api-style Node type-checking and
+// apps/web's browser-scoped one, where `process` isn't an ambient global —
+// this file ships in both, since packages/shows is environment-agnostic.
+const nodeEnv = (
+  globalThis as { process?: { env?: Record<string, string | undefined> } }
+).process?.env;
+const CACHE_TTL_MS = nodeEnv?.CACHE_TTL_MS
+  ? parseInt(nodeEnv.CACHE_TTL_MS, 10)
+  : 5 * 60 * 1000;
 
 function createCache<T>() {
   const store = new Map<string, { data: T; expiresAt: number }>();
