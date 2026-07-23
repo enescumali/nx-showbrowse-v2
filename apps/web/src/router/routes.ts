@@ -8,17 +8,6 @@ export const routes = [
     component: () => import('../views/Homepage.vue'),
   },
   {
-    path: '/genre/:genre',
-    name: 'Genre',
-    component: () => import('../views/Genre.vue'),
-    props: true,
-  },
-  {
-    path: '/popular',
-    name: 'Popular',
-    component: () => import('../views/PopularList.vue'),
-  },
-  {
     path: '/catalog',
     name: 'Catalog',
     component: () => import('../views/Catalog.vue'),

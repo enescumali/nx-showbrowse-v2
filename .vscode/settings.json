@@ -1,8 +1,9 @@
 {
+  "files.autoSave": "off",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "always"
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

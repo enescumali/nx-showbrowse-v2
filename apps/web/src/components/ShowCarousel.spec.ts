@@ -19,6 +19,7 @@ const router = createRouter({
       name: 'ShowDetail',
       component: { template: '<div />' },
     },
+    { path: '/catalog', name: 'Catalog', component: { template: '<div />' } },
   ],
 });
 
@@ -78,5 +79,31 @@ describe('ShowCarousel', () => {
     });
 
     expect(wrapper.findAllComponents({ name: 'ShowThumbnail' }).length).toBe(0);
+  });
+
+  it('does not render a "See all" link when seeAllTo is omitted', () => {
+    const wrapper = mount(ShowCarousel, {
+      props: { genre: 'Drama', shows: minimalShows },
+      global: { plugins: [router], stubs: { RouterLink } },
+    });
+
+    expect(wrapper.text()).not.toContain('See all');
+  });
+
+  it('renders a "See all" link pointing at Catalog when seeAllTo is provided', async () => {
+    const wrapper = mount(ShowCarousel, {
+      props: {
+        genre: 'Drama',
+        shows: minimalShows,
+        seeAllTo: { name: 'Catalog', query: { genre: 'Drama' } },
+      },
+      global: { plugins: [router], stubs: { RouterLink } },
+    });
+    await router.isReady();
+
+    const link = wrapper.find('a');
+    expect(link.exists()).toBe(true);
+    expect(link.text()).toBe('See all ›');
+    expect(link.attributes('href')).toBe('/catalog?genre=Drama');
   });
 });

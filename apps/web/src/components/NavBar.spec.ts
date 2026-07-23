@@ -5,17 +5,14 @@ import NavBar from './NavBar.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { routes } from '../router/routes';
 import { RouterView, RouterLink } from 'vue-router';
-import { SHOWS_USE_CASES_KEY } from '../di/injection-keys';
-import { makeUseCases } from '../test-utils/makeUseCases';
+import { setupMockMatchMedia } from '../test-utils/mockMatchMedia';
+
+setupMockMatchMedia();
 
 const router = createRouter({
   history: createMemoryHistory(),
   routes,
 });
-
-// NavBar derives its genre links from useGenreNames(), so every mount needs
-// the ShowsUseCases DI key provided, same as the composable tests.
-const provide = { [SHOWS_USE_CASES_KEY as symbol]: makeUseCases() };
 
 describe('NavBar', () => {
   beforeEach(async () => {
@@ -31,7 +28,6 @@ describe('NavBar', () => {
           $route: { query: {} },
         },
         stubs: { RouterView, RouterLink },
-        provide,
       },
     });
     expect(wrapper.exists()).toBe(true);
@@ -39,7 +35,7 @@ describe('NavBar', () => {
 
   it('opens and closes the search panel', async () => {
     const wrapper = mount(NavBar, {
-      global: { plugins: [router], provide },
+      global: { plugins: [router] },
     });
 
     // Open search
@@ -59,7 +55,7 @@ describe('NavBar', () => {
     await router.push({ name: 'Home', query: { q: 'test' } });
 
     const wrapper = mount(NavBar, {
-      global: { plugins: [router], provide },
+      global: { plugins: [router] },
     });
 
     // Open search (should sync inputValue)
@@ -75,7 +71,7 @@ describe('NavBar', () => {
 
   it('closes search on Escape key', async () => {
     const wrapper = mount(NavBar, {
-      global: { plugins: [router], provide },
+      global: { plugins: [router] },
     });
 
     await wrapper.find('button[aria-label="Open search"]').trigger('click');
@@ -88,7 +84,7 @@ describe('NavBar', () => {
 
   it('toggles the mobile menu', async () => {
     const wrapper = mount(NavBar, {
-      global: { plugins: [router], provide },
+      global: { plugins: [router] },
     });
 
     const menuBtn = wrapper.find('button[aria-label="Toggle menu"]');

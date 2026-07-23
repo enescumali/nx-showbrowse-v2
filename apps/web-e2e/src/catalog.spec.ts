@@ -11,25 +11,26 @@ test.describe('Catalog', () => {
     await expect(page.getByRole('heading', { name: 'All Shows' })).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByText('Page 1 of 3 — 600 shows total')).toBeVisible({
+    await expect(page.getByText('1 of 3')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('600 shows total')).toBeVisible({
       timeout: 10_000,
     });
   });
 
   test('next/prev walk real pages and update the URL', async ({ page }) => {
     await page.goto('/catalog');
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
+    await expect(page.getByText(/^1 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
 
     await page.getByRole('button', { name: 'Next page' }).click();
-    await expect(page.getByText(/Page 2 of 3/)).toBeVisible({
+    await expect(page.getByText(/^2 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
     await expect(page).toHaveURL(/page=1/);
 
     await page.getByRole('button', { name: 'Previous page' }).click();
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
+    await expect(page.getByText(/^1 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
     await expect(page).not.toHaveURL(/page=/);
@@ -37,7 +38,7 @@ test.describe('Catalog', () => {
 
   test('next is disabled on the last page', async ({ page }) => {
     await page.goto('/catalog?page=2');
-    await expect(page.getByText(/Page 3 of 3/)).toBeVisible({
+    await expect(page.getByText(/^3 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
     await expect(
@@ -45,32 +46,20 @@ test.describe('Catalog', () => {
     ).toBeDisabled();
   });
 
-  test('jump-to-page input navigates directly', async ({ page }) => {
-    await page.goto('/catalog');
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
-      timeout: 10_000,
-    });
-
-    await page.getByLabel('Jump to page').fill('2');
-    await page.getByRole('button', { name: 'Go' }).click();
-
-    await expect(page.getByText(/Page 3 of 3/)).toBeVisible({
-      timeout: 10_000,
-    });
-    await expect(page).toHaveURL(/page=2/);
-  });
-
   test('genre filter is a real global refetch — totals reflect the whole genre, not just the current page', async ({
     page,
   }) => {
     await page.goto('/catalog');
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
+    await expect(page.getByText(/^1 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
 
     await page.getByLabel('Genre').selectOption('Drama');
 
-    await expect(page.getByText('Page 1 of 2 — 300 shows total')).toBeVisible({
+    await expect(page.getByText(/^1 of 2$/)).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText('300 shows total')).toBeVisible({
       timeout: 10_000,
     });
     expect(page.url()).toContain('genre=Drama');
@@ -78,13 +67,16 @@ test.describe('Catalog', () => {
 
   test('changing genre resets back to page 1', async ({ page }) => {
     await page.goto('/catalog?page=2');
-    await expect(page.getByText(/Page 3 of 3/)).toBeVisible({
+    await expect(page.getByText(/^3 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
 
     await page.getByLabel('Genre').selectOption('Comedy');
 
-    await expect(page.getByText('Page 1 of 1 — 150 shows total')).toBeVisible({
+    await expect(page.getByText(/^1 of 1$/)).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText('150 shows total')).toBeVisible({
       timeout: 10_000,
     });
     await expect(page).not.toHaveURL(/page=/);
@@ -94,7 +86,7 @@ test.describe('Catalog', () => {
     page,
   }) => {
     await page.goto('/catalog');
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
+    await expect(page.getByText(/^1 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
 
@@ -108,7 +100,7 @@ test.describe('Catalog', () => {
 
   test('sort by title puts Fixture Show 001 first', async ({ page }) => {
     await page.goto('/catalog');
-    await expect(page.getByText(/Page 1 of 3/)).toBeVisible({
+    await expect(page.getByText(/^1 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
 
@@ -122,7 +114,7 @@ test.describe('Catalog', () => {
 
   test('direct link to a deep page loads that page', async ({ page }) => {
     await page.goto('/catalog?page=2');
-    await expect(page.getByText(/Page 3 of 3/)).toBeVisible({
+    await expect(page.getByText(/^3 of 3$/)).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -134,7 +126,10 @@ test.describe('Catalog', () => {
 
     await expect(page.getByLabel('Genre')).toHaveValue('Drama');
     await expect(page.getByLabel('Sort by')).toHaveValue('title');
-    await expect(page.getByText('Page 2 of 2 — 300 shows total')).toBeVisible({
+    await expect(page.getByText(/^2 of 2$/)).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText('300 shows total')).toBeVisible({
       timeout: 10_000,
     });
   });

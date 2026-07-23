@@ -7,7 +7,7 @@
  * Run with: npx tsx apps/web-e2e/fixtures/generate-snapshot.ts
  *
  * Layout (600 shows total, one genre each, ids 1..600):
- *   1-300   Drama   (300 shows -> 2 pages at pageSize 250, for Genre.vue pagination coverage)
+ *   1-300   Drama   (300 shows -> 2 pages at pageSize 250, for Catalog's genre-filter pagination coverage)
  *   301-450 Comedy  (150 shows -> 1 page)
  *   451-550 Action  (100 shows -> 1 page)
  *   551-600 Sci-Fi  (50 shows  -> 1 page)

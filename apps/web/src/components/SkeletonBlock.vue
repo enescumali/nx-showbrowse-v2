@@ -1,3 +1,3 @@
 <template>
-  <div class="animate-pulse rounded bg-[#2a2a2a]" v-bind="$attrs" />
+  <div class="animate-pulse rounded bg-card-alt" v-bind="$attrs" />
 </template>

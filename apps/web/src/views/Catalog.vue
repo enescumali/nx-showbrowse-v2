@@ -59,7 +59,10 @@ watch([page, genre, sort, requestedPageSize], () => {
   if (page.value) query.page = String(page.value);
   if (genre.value) query.genre = genre.value;
   if (sort.value) query.sort = sort.value;
-  if (requestedPageSize.value && requestedPageSize.value !== DEFAULT_PAGE_SIZE) {
+  if (
+    requestedPageSize.value &&
+    requestedPageSize.value !== DEFAULT_PAGE_SIZE
+  ) {
     query.pageSize = String(requestedPageSize.value);
   }
   router.replace({ query });
@@ -83,34 +86,26 @@ watch(
     }
   },
 );
-
-const jumpInput = ref('');
-function submitJump() {
-  const target = Number(jumpInput.value);
-  if (!Number.isFinite(target) || target < 0) return;
-  goToPage(Math.floor(target));
-  jumpInput.value = '';
-}
 </script>
 
 <template>
   <main class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
     <header class="mb-6">
-      <h1 class="text-3xl font-bold text-[#e5e5e5] m-0">All Shows</h1>
-      <p class="text-[#999] text-sm mt-1">
+      <h1 class="text-3xl font-bold text-text m-0">All Shows</h1>
+      <p class="text-text-subtle text-sm mt-1">
         Browse the full TVMaze catalog, filtered and sorted across the entire
         dataset.
       </p>
     </header>
 
     <div
-      class="flex flex-wrap items-center gap-3 mb-6 rounded-lg bg-[#1f1f1f] p-3"
+      class="flex flex-wrap items-center gap-3 mb-6 rounded-lg bg-card p-3"
     >
-      <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
+      <label class="flex items-center gap-2 text-sm text-text-muted">
         Genre
         <select
           v-model="genre"
-          class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
+          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
         >
           <option value="">All genres</option>
           <option v-for="g in genreNames" :key="g.genre" :value="g.genre">
@@ -119,11 +114,11 @@ function submitJump() {
         </select>
       </label>
 
-      <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
+      <label class="flex items-center gap-2 text-sm text-text-muted">
         Sort by
         <select
           v-model="sort"
-          class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
+          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
         >
           <option value="">Default order</option>
           <option value="rating">Rating (high to low)</option>
@@ -132,70 +127,17 @@ function submitJump() {
         </select>
       </label>
 
-      <label class="flex items-center gap-2 text-sm text-[#b3b3b3]">
+      <label class="flex items-center gap-2 text-sm text-text-muted">
         Per page
         <select
           v-model.number="requestedPageSize"
-          class="bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
+          class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
         >
           <option v-for="size in PAGE_SIZE_OPTIONS" :key="size" :value="size">
             {{ size }}
           </option>
         </select>
       </label>
-    </div>
-
-    <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="px-3 py-1.5 rounded border border-[#333] text-sm text-[#e5e5e5] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#E50914] transition-colors"
-          :disabled="page === 0 || loading"
-          aria-label="Previous page"
-          @click="prevPage"
-        >
-          ‹ Prev
-        </button>
-        <span
-          class="text-sm text-[#b3b3b3] min-w-56"
-          role="status"
-          aria-live="polite"
-        >
-          <template v-if="loading">Loading…</template>
-          <template v-else
-            >Page {{ page + 1 }} of {{ totalPages }} —
-            {{ totalShows.toLocaleString() }} shows total</template
-          >
-        </span>
-        <button
-          type="button"
-          class="px-3 py-1.5 rounded border border-[#333] text-sm text-[#e5e5e5] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#E50914] transition-colors"
-          :disabled="page >= totalPages - 1 || loading"
-          aria-label="Next page"
-          @click="nextPage"
-        >
-          Next ›
-        </button>
-      </div>
-
-      <form class="flex items-center gap-2" @submit.prevent="submitJump">
-        <label class="text-sm text-[#999]" for="jump-to-page"
-          >Jump to page</label
-        >
-        <input
-          id="jump-to-page"
-          v-model="jumpInput"
-          type="number"
-          min="0"
-          class="w-20 bg-[#2a2a2a] text-[#e5e5e5] text-sm rounded border border-[#333] px-2 py-1"
-        />
-        <button
-          type="submit"
-          class="px-3 py-1.5 rounded border border-[#333] text-sm text-[#e5e5e5] hover:border-[#E50914] transition-colors"
-        >
-          Go
-        </button>
-      </form>
     </div>
 
     <!-- Initial load -->
@@ -215,13 +157,13 @@ function submitJump() {
     <!-- No page has ever loaded successfully -->
     <div
       v-else-if="error && shows.length === 0"
-      class="text-center py-6 text-[#E50914]"
+      class="text-center py-6 text-brand"
       role="alert"
     >
       {{ error }}
       <br />
       <button
-        class="mt-4 px-5 py-2 border border-[#E50914] rounded text-[#E50914] bg-transparent cursor-pointer text-sm hover:bg-[#E50914] hover:text-white transition-colors"
+        class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
         @click="reload"
       >
         Try again
@@ -232,7 +174,7 @@ function submitJump() {
       <!-- A later page failed, but we still have a previous page to show -->
       <div
         v-if="error"
-        class="mb-4 rounded border border-[#E50914]/40 bg-[#E50914]/10 text-[#E50914] text-sm px-3 py-2"
+        class="mb-4 rounded border border-brand/40 bg-brand/10 text-brand text-sm px-3 py-2"
         role="alert"
       >
         Couldn't load that page ({{ error }}). Still showing page
@@ -241,11 +183,43 @@ function submitJump() {
 
       <div
         v-if="shows.length === 0"
-        class="text-center py-12 text-[#999] text-lg"
+        class="text-center py-12 text-text-subtle text-lg"
       >
         No shows found for the selected genre.
       </div>
-      <ShowThumbnailGrid v-else :shows="shows" />
+      <template v-else>
+        <ShowThumbnailGrid :shows="shows" />
+
+        <div
+          class="flex items-center justify-center gap-3 mt-6 flex-wrap rounded-lg bg-card p-3"
+        >
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded border border-border text-sm text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand transition-colors"
+            :disabled="page === 0 || loading"
+            aria-label="Previous page"
+            @click="prevPage"
+          >
+            ‹ Prev
+          </button>
+          <span class="text-sm text-text-muted" role="status" aria-live="polite">
+            <template v-if="loading">Loading…</template>
+            <template v-else>{{ page + 1 }} of {{ totalPages }}</template>
+          </span>
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded border border-border text-sm text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand transition-colors"
+            :disabled="page >= totalPages - 1 || loading"
+            aria-label="Next page"
+            @click="nextPage"
+          >
+            Next ›
+          </button>
+          <span v-if="!loading" class="text-sm text-text-subtle">
+            {{ totalShows.toLocaleString() }} shows total
+          </span>
+        </div>
+      </template>
     </template>
   </main>
 </template>

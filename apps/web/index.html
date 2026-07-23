@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      // Runs before first paint to avoid a flash of the wrong theme.
+      // Keep the storage key in sync with useTheme.ts.
+      (function () {
+        var saved = localStorage.getItem('showbrowse-theme');
+        var dark =
+          saved === 'dark' ||
+          (saved !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

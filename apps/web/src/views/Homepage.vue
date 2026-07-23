@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router';
 import { useShowSearch } from '../composables/useShowSearch';
 import { useGenreCarousels } from '../composables/useGenreCarousels';
 import { useTopRatedShows } from '../composables/useTopRatedShows';
-import HeroBanner from '../components/HeroBanner.vue';
 import ShowCarousel from '../components/ShowCarousel.vue';
 import ShowThumbnailGrid from '../components/ShowThumbnailGrid.vue';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
@@ -39,11 +38,6 @@ function reload() {
   reloadTopRated();
 }
 
-const featuredShow = computed(() => {
-  if (!topRated.value.length) return null;
-  return topRated.value[Math.floor(Math.random() * topRated.value.length)];
-});
-
 const searchQuery = computed(() => (route.query.q as string) ?? '');
 const isSearchMode = computed(() => searchQuery.value.trim().length > 0);
 
@@ -54,12 +48,12 @@ watch(searchQuery, (q) => search(q), { immediate: true });
   <main class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
     <!-- Search mode -->
     <template v-if="isSearchMode">
-      <h1 class="text-2xl font-bold text-[#e5e5e5] mb-6">
+      <h1 class="text-2xl font-bold text-text mb-6">
         Search results for "{{ searchQuery }}"
       </h1>
       <div
         v-if="searchLoading"
-        class="text-center py-12 text-[#999] text-lg"
+        class="text-center py-12 text-text-subtle text-lg"
         role="status"
         aria-live="polite"
       >
@@ -67,14 +61,14 @@ watch(searchQuery, (q) => search(q), { immediate: true });
       </div>
       <div
         v-else-if="searchError"
-        class="text-center py-12 text-[#E50914] text-lg"
+        class="text-center py-12 text-brand text-lg"
         role="alert"
       >
         {{ searchError }}
       </div>
       <div
         v-else-if="searchResults.length === 0"
-        class="text-center py-12 text-[#999] text-lg"
+        class="text-center py-12 text-text-subtle text-lg"
       >
         No results for "{{ searchQuery }}"
       </div>
@@ -84,11 +78,6 @@ watch(searchQuery, (q) => search(q), { immediate: true });
     <!-- Browse mode: genre carousels -->
     <template v-else>
       <div v-if="loading" aria-busy="true">
-        <!-- Hero skeleton -->
-        <SkeletonBlock
-          class="w-full mb-10 rounded-none"
-          style="min-height: 480px"
-        />
         <!-- Carousel skeletons -->
         <div v-for="row in 4" :key="row" class="mb-8">
           <SkeletonBlock class="h-5 w-40 mb-3 rounded" />
@@ -110,25 +99,24 @@ watch(searchQuery, (q) => search(q), { immediate: true });
       </div>
       <div
         v-else-if="error"
-        class="text-center py-12 text-[#E50914] text-lg"
+        class="text-center py-12 text-brand text-lg"
         role="alert"
       >
         {{ error }}
         <br />
         <button
-          class="mt-4 px-5 py-2 border border-[#E50914] rounded text-[#E50914] bg-transparent cursor-pointer text-sm hover:bg-[#E50914] hover:text-white transition-colors"
+          class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
           @click="reload()"
         >
           Try again
         </button>
       </div>
       <template v-else>
-        <HeroBanner v-if="featuredShow" :show="featuredShow" />
-
         <ShowCarousel
           v-if="topRated.length > 0"
           genre="⭐ Top 10 by Rating"
           :shows="topRated"
+          :see-all-to="{ name: 'Catalog', query: { sort: 'rating' } }"
         />
 
         <ShowCarousel
@@ -136,6 +124,7 @@ watch(searchQuery, (q) => search(q), { immediate: true });
           :key="genre"
           :genre="genre"
           :shows="shows"
+          :see-all-to="{ name: 'Catalog', query: { genre } }"
         />
       </template>
     </template>

@@ -10,24 +10,28 @@ test.describe('Home page', () => {
     });
   });
 
-  test('hero banner is visible', async ({ page }) => {
-    await page.goto('/');
-    // Hero banner contains a "View Details" RouterLink
-    await expect(
-      page.getByRole('link', { name: /View Details/i }).first(),
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
   test('nav links are present', async ({ page }) => {
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Main navigation' });
-    await expect(nav.getByRole('link', { name: 'Popular' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'All Shows' })).toBeVisible();
+    await expect(
+      nav.getByRole('link', { name: 'On TV Today' }),
+    ).toBeVisible();
+  });
 
-    // Genre links are generated dynamically from the loaded shows rather
-    // than a fixed list, so assert on presence/count, not specific names.
-    const genreLinks = nav.locator('a[href^="/genre/"]');
-    await expect(genreLinks.first()).toBeVisible({ timeout: 10_000 });
-    expect(await genreLinks.count()).toBeGreaterThan(0);
+  test('a genre row\'s "See all" link navigates to Catalog filtered by that genre', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const dramaHeading = page.getByRole('heading', { name: 'Drama' });
+    await expect(dramaHeading).toBeVisible({ timeout: 10_000 });
+
+    const dramaRow = page.locator('section').filter({ has: dramaHeading });
+    await dramaRow.getByRole('link', { name: 'See all' }).click();
+
+    await expect(page).toHaveURL(/\/catalog\?genre=Drama/);
+    await expect(page.getByText('300 shows total')).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

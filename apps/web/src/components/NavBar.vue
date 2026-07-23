@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, nextTick, watch } from 'vue';
+import { ref, nextTick, watch } from 'vue';
 import { RouterLink, useRouter, useRoute } from 'vue-router';
-import { useGenreNames } from '../composables/useGenreNames';
+import { useTheme } from '../composables/useTheme';
 
 const router = useRouter();
 const route = useRoute();
-
-// Genre nav links come from apps/api's lightweight genre-names endpoint —
-// no Show payloads fetched just to build 6 links.
-const { genreNames } = useGenreNames();
-const navGenres = computed(() =>
-  [...genreNames.value]
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6)
-    .map((g) => g.genre),
-);
+const { theme, toggleTheme } = useTheme();
 
 const searchOpen = ref(false);
 const menuOpen = ref(false);
@@ -97,14 +88,14 @@ function onBlur() {
 
 <template>
   <nav
-    class="fixed top-0 left-0 right-0 z-50 bg-[#141414] border-b border-[#222]"
+    class="fixed top-0 left-0 right-0 z-50 bg-surface border-b border-edge"
     aria-label="Main navigation"
   >
     <div class="max-w-[1400px] mx-auto px-4 h-14 flex items-center gap-4">
       <!-- Logo -->
       <RouterLink
         :to="{ name: 'Home' }"
-        class="text-[#E50914] font-black text-xl tracking-widest uppercase no-underline shrink-0"
+        class="text-brand font-black text-xl tracking-widest uppercase no-underline shrink-0"
         aria-label="Home"
         @click="
           () => {
@@ -119,28 +110,14 @@ function onBlur() {
       <div class="hidden md:flex items-center gap-5 shrink-0">
         <RouterLink
           :to="{ name: 'Home' }"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
+          class="text-text text-sm font-medium no-underline transition-colors hover:text-text-strong relative nav-link"
           exact-active-class="nav-link--active"
           @click="closeSearch"
           >Home</RouterLink
         >
         <RouterLink
-          v-for="genre in navGenres"
-          :key="genre"
-          :to="{ name: 'Genre', params: { genre } }"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
-          active-class="nav-link--active"
-          >{{ genre }}</RouterLink
-        >
-        <RouterLink
-          to="/popular"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
-          active-class="nav-link--active"
-          >Popular</RouterLink
-        >
-        <RouterLink
           to="/catalog"
-          class="text-[#e5e5e5] text-sm font-medium no-underline transition-colors hover:text-white relative nav-link"
+          class="text-text text-sm font-medium no-underline transition-colors hover:text-text-strong relative nav-link"
           active-class="nav-link--active"
           >All Shows</RouterLink
         >
@@ -149,8 +126,8 @@ function onBlur() {
           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold no-underline border transition-colors"
           :class="
             route.name === 'Today'
-              ? 'bg-[#E50914] text-white border-[#E50914]'
-              : 'bg-[#E50914]/10 text-[#E50914] border-[#E50914]/40 hover:bg-[#E50914]/20'
+              ? 'bg-brand text-white border-brand'
+              : 'bg-brand/10 text-brand border-brand/40 hover:bg-brand/20'
           "
           >On TV Today</RouterLink
         >
@@ -161,10 +138,10 @@ function onBlur() {
         <!-- Expanded search input -->
         <div
           v-if="searchOpen"
-          class="flex items-center border border-[#333] rounded bg-[#2a2a2a] px-3 py-1.5 gap-2 transition-colors focus-within:border-[#E50914]"
+          class="flex items-center border border-border rounded bg-card-alt px-3 py-1.5 gap-2 transition-colors focus-within:border-brand"
         >
           <svg
-            class="w-4 h-4 text-white shrink-0"
+            class="w-4 h-4 text-text shrink-0"
             fill="none"
             stroke="currentColor"
             stroke-width="2.5"
@@ -179,14 +156,14 @@ function onBlur() {
             v-model="inputValue"
             type="search"
             placeholder="Search titles"
-            class="bg-transparent border-none outline-none text-white text-sm w-36 sm:w-52 placeholder-[#999] [&::-webkit-search-cancel-button]:hidden"
+            class="bg-transparent border-none outline-none text-text text-sm w-36 sm:w-52 placeholder-text-subtle [&::-webkit-search-cancel-button]:hidden"
             aria-label="Search shows"
             @input="onInput"
             @keydown="onKeydown"
             @blur="onBlur"
           />
           <button
-            class="bg-transparent border-none text-[#999] cursor-pointer text-xs leading-none hover:text-white ml-1"
+            class="bg-transparent border-none text-text-subtle cursor-pointer text-xs leading-none hover:text-text-strong ml-1"
             @click="closeSearch"
             aria-label="Close search"
           >
@@ -197,7 +174,7 @@ function onBlur() {
         <!-- Search icon button (collapsed) -->
         <button
           v-else
-          class="bg-transparent border-none text-white cursor-pointer p-1 hover:text-[#ccc] transition-colors"
+          class="bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
           aria-label="Open search"
           @click="openSearch"
         >
@@ -215,9 +192,48 @@ function onBlur() {
         </button>
       </div>
 
+      <!-- Theme toggle -->
+      <button
+        type="button"
+        class="hidden md:inline-flex bg-transparent border-none text-text cursor-pointer p-1 hover:text-text-muted transition-colors"
+        :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        @click="toggleTheme"
+      >
+        <svg
+          v-if="theme === 'dark'"
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            stroke-linecap="round"
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+          />
+        </svg>
+        <svg
+          v-else
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+          />
+        </svg>
+      </button>
+
       <!-- Hamburger button (mobile only) -->
       <button
-        class="md:hidden bg-transparent border-none text-white cursor-pointer p-1 ml-auto hover:text-[#ccc] transition-colors"
+        class="md:hidden bg-transparent border-none text-text cursor-pointer p-1 ml-auto hover:text-text-muted transition-colors"
         :aria-expanded="menuOpen"
         aria-controls="mobile-menu"
         aria-label="Toggle menu"
@@ -259,24 +275,24 @@ function onBlur() {
     <div
       v-if="menuOpen"
       id="mobile-menu"
-      class="md:hidden bg-[#1f1f1f] border-t border-[#222] px-4 py-3 flex flex-col gap-1 z-50 fixed top-14 left-0 right-0"
+      class="md:hidden bg-card border-t border-edge px-4 py-3 flex flex-col gap-1 z-50 fixed top-14 left-0 right-0"
       style="max-width: 100vw"
     >
       <!-- Search inside mobile menu -->
       <div
-        class="flex items-center border border-[#333] rounded bg-[#2a2a2a] px-3 py-1.5 gap-2 mb-2 transition-colors focus-within:border-[#E50914]"
+        class="flex items-center border border-border rounded bg-card-alt px-3 py-1.5 gap-2 mb-2 transition-colors focus-within:border-brand"
       >
         <input
           v-model="inputValue"
           type="search"
           placeholder="Search titles"
-          class="bg-transparent border-none outline-none text-white text-sm flex-1 placeholder-[#999] [&::-webkit-search-cancel-button]:hidden"
+          class="bg-transparent border-none outline-none text-text text-sm flex-1 placeholder-text-subtle [&::-webkit-search-cancel-button]:hidden"
           aria-label="Search shows"
           @keydown.enter="onMobileSearch"
           @keydown.esc="closeMenu"
         />
         <button
-          class="bg-[#E50914] text-white text-xs font-semibold px-3 py-1 rounded shrink-0 hover:bg-[#c40812] transition-colors"
+          class="bg-brand text-white text-xs font-semibold px-3 py-1 rounded shrink-0 hover:bg-brand-hover transition-colors"
           aria-label="Search"
           @click="onMobileSearch"
         >
@@ -286,8 +302,8 @@ function onBlur() {
 
       <RouterLink
         :to="{ name: 'Home' }"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        exact-active-class="text-white font-bold"
+        class="text-text text-sm font-medium no-underline py-2.5 border-b border-card-alt hover:text-text-strong transition-colors"
+        exact-active-class="text-text-strong font-bold"
         @click="
           () => {
             closeMenu();
@@ -296,36 +312,29 @@ function onBlur() {
         "
         >Home</RouterLink
       >
-      <RouterLink
-        v-for="genre in navGenres"
-        :key="genre"
-        :to="{ name: 'Genre', params: { genre } }"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        active-class="text-white font-bold"
-        @click="closeMenu"
-        >{{ genre }}</RouterLink
-      >
-      <RouterLink
-        to="/popular"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        active-class="text-white font-bold"
-        @click="closeMenu"
-        >Popular</RouterLink
-      >
+
       <RouterLink
         to="/catalog"
-        class="text-[#e5e5e5] text-sm font-medium no-underline py-2.5 border-b border-[#2a2a2a] hover:text-white transition-colors"
-        active-class="text-white font-bold"
+        class="text-text text-sm font-medium no-underline py-2.5 border-b border-card-alt hover:text-text-strong transition-colors"
+        active-class="text-text-strong font-bold"
         @click="closeMenu"
         >All Shows</RouterLink
       >
       <RouterLink
         to="/today"
-        class="self-start mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold no-underline border bg-[#E50914]/10 text-[#E50914] border-[#E50914]/40"
-        active-class="bg-[#E50914] text-white border-[#E50914]"
+        class="self-start mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold no-underline border bg-brand/10 text-brand border-brand/40"
+        active-class="bg-brand text-white border-brand"
         @click="closeMenu"
         >On TV Today</RouterLink
       >
+
+      <button
+        type="button"
+        class="self-start mt-3 flex items-center gap-2 bg-transparent border-none text-text-subtle text-sm cursor-pointer p-0 hover:text-text-strong transition-colors"
+        @click="toggleTheme"
+      >
+        {{ theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode' }}
+      </button>
     </div>
   </nav>
 </template>
@@ -346,7 +355,7 @@ function onBlur() {
   transform: scaleX(1);
 }
 .nav-link--active {
-  color: #ffffff;
+  color: var(--color-text-strong);
   font-weight: 700;
 }
 .nav-link--active::after {

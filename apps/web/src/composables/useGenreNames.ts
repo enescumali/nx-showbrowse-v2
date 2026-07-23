@@ -3,8 +3,8 @@ import type { GenreSummary } from '@show-browse/shows';
 import { injectRequired, SHOWS_USE_CASES_KEY } from '../di/injection-keys';
 import { useAsyncState } from './useAsyncState';
 
-/** Genre names + counts only — no Show payloads — for NavBar's nav links
- * and Catalog's genre filter dropdown. */
+/** Genre names + counts only — no Show payloads — for Catalog's genre
+ * filter dropdown. */
 export function useGenreNames() {
   const useCases = injectRequired(SHOWS_USE_CASES_KEY, 'ShowsUseCases');
   const { loading, error, run } = useAsyncState();

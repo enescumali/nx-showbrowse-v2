@@ -32,7 +32,7 @@ watch(error, (msg) => {
 <template>
   <main class="max-w-4xl mx-auto px-4 pt-20 pb-6">
     <button
-      class="border border-[#E50914] text-[#E50914] bg-transparent px-4 py-1.5 rounded cursor-pointer text-sm mb-6 transition-colors hover:bg-[#E50914] hover:text-white"
+      class="border border-brand text-brand bg-transparent px-4 py-1.5 rounded cursor-pointer text-sm mb-6 transition-colors hover:bg-brand hover:text-white"
       @click="router.back()"
       aria-label="Go back"
     >
@@ -69,13 +69,13 @@ watch(error, (msg) => {
 
     <div
       v-else-if="error"
-      class="text-center py-12 text-[#E50914]"
+      class="text-center py-12 text-brand"
       role="alert"
     >
       {{ error }}
       <br />
       <button
-        class="mt-4 px-5 py-2 border border-[#E50914] rounded text-[#E50914] bg-transparent cursor-pointer text-sm hover:bg-[#E50914] hover:text-white transition-colors"
+        class="mt-4 px-5 py-2 border border-brand rounded text-brand bg-transparent cursor-pointer text-sm hover:bg-brand hover:text-white transition-colors"
         @click="router.back()"
       >
         Go back
@@ -85,7 +85,7 @@ watch(error, (msg) => {
     <!-- Full detail once loaded -->
     <article v-else-if="show" class="flex flex-col gap-4">
       <div
-        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-[#2a2a2a] mb-2"
+        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-card-alt mb-2"
         :style="
           show.backdropUrl ? `background-image: url(${show.backdropUrl})` : ''
         "
@@ -99,9 +99,9 @@ watch(error, (msg) => {
       </div>
 
       <div class="flex flex-col gap-4">
-        <h1 class="text-3xl font-bold text-[#e5e5e5]">{{ show.title }}</h1>
+        <h1 class="text-3xl font-bold text-text">{{ show.title }}</h1>
 
-        <div class="flex flex-wrap gap-4 text-[#b3b3b3] text-sm">
+        <div class="flex flex-wrap gap-4 text-text-muted text-sm">
           <span>⭐ {{ show.rating.toFixed(1) }}</span>
           <span>{{ show.releaseDate }}</span>
           <span v-if="show.runtime">{{ show.runtime }} min</span>
@@ -111,17 +111,17 @@ watch(error, (msg) => {
           <RouterLink
             v-for="genre in show.genres"
             :key="genre"
-            :to="{ name: 'Genre', params: { genre } }"
-            class="px-3 py-1 rounded-full bg-[#E50914] text-white text-xs hover:bg-[#b20710] transition-colors no-underline cursor-pointer"
+            :to="{ name: 'Catalog', query: { genre } }"
+            class="px-3 py-1 rounded-full bg-brand text-white text-xs hover:bg-brand-hover transition-colors no-underline cursor-pointer"
           >
             {{ genre }}
           </RouterLink>
         </div>
 
-        <p class="text-[#b3b3b3] leading-7">{{ show.overview }}</p>
+        <p class="text-text-muted leading-7">{{ show.overview }}</p>
 
         <section v-if="show.cast?.length">
-          <h2 class="text-xl font-semibold text-[#e5e5e5] mb-4">Cast</h2>
+          <h2 class="text-xl font-semibold text-text mb-4">Cast</h2>
           <ul class="flex flex-wrap gap-4 list-none p-0 m-0">
             <li
               v-for="member in show.cast"
@@ -135,8 +135,8 @@ watch(error, (msg) => {
                 class="w-12 h-12 rounded-full object-cover"
                 loading="lazy"
               />
-              <div class="flex flex-col text-xs text-[#b3b3b3]">
-                <strong class="text-[#e5e5e5]">{{ member.name }}</strong>
+              <div class="flex flex-col text-xs text-text-muted">
+                <strong class="text-text">{{ member.name }}</strong>
                 <span>{{ member.character }}</span>
               </div>
             </li>
@@ -148,7 +148,7 @@ watch(error, (msg) => {
     <!-- Optimistic: show partial data from thumbnail while full detail loads -->
     <article v-else-if="optimistic" class="flex flex-col gap-4">
       <div
-        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-[#2a2a2a] mb-2"
+        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-card-alt mb-2"
         :style="
           optimistic.posterUrl
             ? `background-image: url(${optimistic.posterUrl})`
@@ -164,11 +164,11 @@ watch(error, (msg) => {
       </div>
 
       <div class="flex flex-col gap-4">
-        <h1 class="text-3xl font-bold text-[#e5e5e5]">
+        <h1 class="text-3xl font-bold text-text">
           {{ optimistic.title }}
         </h1>
 
-        <div class="flex flex-wrap gap-4 text-[#b3b3b3] text-sm">
+        <div class="flex flex-wrap gap-4 text-text-muted text-sm">
           <span>⭐ {{ optimistic.rating.toFixed(1) }}</span>
           <span>{{ optimistic.releaseDate }}</span>
         </div>
@@ -177,14 +177,14 @@ watch(error, (msg) => {
           <RouterLink
             v-for="genre in optimistic.genres"
             :key="genre"
-            :to="{ name: 'Genre', params: { genre } }"
-            class="px-3 py-1 rounded-full bg-[#E50914] text-white text-xs hover:bg-[#b20710] transition-colors no-underline cursor-pointer"
+            :to="{ name: 'Catalog', query: { genre } }"
+            class="px-3 py-1 rounded-full bg-brand text-white text-xs hover:bg-brand-hover transition-colors no-underline cursor-pointer"
           >
             {{ genre }}
           </RouterLink>
         </div>
 
-        <p v-if="optimistic.overview" class="text-[#b3b3b3] leading-7">
+        <p v-if="optimistic.overview" class="text-text-muted leading-7">
           {{ optimistic.overview }}
         </p>
 
