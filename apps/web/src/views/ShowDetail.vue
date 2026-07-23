@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import type { Show } from '@show-browse/shows';
 import { useShowDetail } from '../composables/useShowDetail';
 import SkeletonBlock from '../components/SkeletonBlock.vue';
+import ShowDetailContent from '../components/ShowDetailContent.vue';
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -30,7 +31,11 @@ watch(error, (msg) => {
 </script>
 
 <template>
-  <main id="main-content" tabindex="-1" class="max-w-4xl mx-auto px-4 pt-20 pb-6">
+  <main
+    id="main-content"
+    tabindex="-1"
+    class="max-w-4xl mx-auto px-4 pt-20 pb-6"
+  >
     <button
       class="border border-brand text-brand-text bg-transparent px-4 py-1.5 rounded cursor-pointer text-sm mb-6 transition-colors hover:bg-brand hover:text-white"
       @click="router.back()"
@@ -67,7 +72,11 @@ watch(error, (msg) => {
       </div>
     </div>
 
-    <div v-else-if="error" class="text-center py-12 text-brand-text" role="alert">
+    <div
+      v-else-if="error"
+      class="text-center py-12 text-brand-text"
+      role="alert"
+    >
       {{ error }}
       <br />
       <button
@@ -78,125 +87,7 @@ watch(error, (msg) => {
       </button>
     </div>
 
-    <!-- Full detail once loaded -->
-    <article v-else-if="show" class="flex flex-col gap-4">
-      <div
-        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-card-alt mb-2"
-        :style="
-          show.backdropUrl ? `background-image: url(${show.backdropUrl})` : ''
-        "
-      >
-        <img
-          v-if="show.posterUrl"
-          :src="show.posterUrl"
-          :alt="show.title"
-          class="w-28 rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-        />
-      </div>
-
-      <div class="flex flex-col gap-4">
-        <h1 class="text-3xl font-bold text-text">{{ show.title }}</h1>
-
-        <div class="flex flex-wrap gap-4 text-text-muted text-sm">
-          <span>⭐ {{ show.rating.toFixed(1) }}</span>
-          <span>{{ show.releaseDate }}</span>
-          <span v-if="show.runtime">{{ show.runtime }} min</span>
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-          <RouterLink
-            v-for="genre in show.genres"
-            :key="genre"
-            :to="{ name: 'Catalog', query: { genre } }"
-            class="px-3 py-1 rounded-full bg-brand text-white text-xs hover:bg-brand-hover transition-colors no-underline cursor-pointer"
-          >
-            {{ genre }}
-          </RouterLink>
-        </div>
-
-        <p class="text-text-muted leading-7">{{ show.overview }}</p>
-
-        <section v-if="show.cast?.length">
-          <h2 class="text-xl font-semibold text-text mb-4">Cast</h2>
-          <ul class="flex flex-wrap gap-4 list-none p-0 m-0">
-            <li
-              v-for="member in show.cast"
-              :key="member.id"
-              class="flex items-center gap-2 w-40"
-            >
-              <img
-                v-if="member.profileUrl"
-                :src="member.profileUrl"
-                :alt="member.name"
-                class="w-12 h-12 rounded-full object-cover"
-                loading="lazy"
-              />
-              <div class="flex flex-col text-xs text-text-muted">
-                <strong class="text-text">{{ member.name }}</strong>
-                <span>{{ member.character }}</span>
-              </div>
-            </li>
-          </ul>
-        </section>
-      </div>
-    </article>
-
-    <!-- Optimistic: show partial data from thumbnail while full detail loads -->
-    <article v-else-if="optimistic" class="flex flex-col gap-4">
-      <div
-        class="w-full min-h-[220px] bg-cover bg-center rounded-xl flex items-end p-6 bg-card-alt mb-2"
-        :style="
-          optimistic.posterUrl
-            ? `background-image: url(${optimistic.posterUrl})`
-            : ''
-        "
-      >
-        <img
-          v-if="optimistic.posterUrl"
-          :src="optimistic.posterUrl"
-          :alt="optimistic.title"
-          class="w-28 rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-        />
-      </div>
-
-      <div class="flex flex-col gap-4">
-        <h1 class="text-3xl font-bold text-text">
-          {{ optimistic.title }}
-        </h1>
-
-        <div class="flex flex-wrap gap-4 text-text-muted text-sm">
-          <span>⭐ {{ optimistic.rating.toFixed(1) }}</span>
-          <span>{{ optimistic.releaseDate }}</span>
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-          <RouterLink
-            v-for="genre in optimistic.genres"
-            :key="genre"
-            :to="{ name: 'Catalog', query: { genre } }"
-            class="px-3 py-1 rounded-full bg-brand text-white text-xs hover:bg-brand-hover transition-colors no-underline cursor-pointer"
-          >
-            {{ genre }}
-          </RouterLink>
-        </div>
-
-        <p v-if="optimistic.overview" class="text-text-muted leading-7">
-          {{ optimistic.overview }}
-        </p>
-
-        <div>
-          <SkeletonBlock class="h-6 w-24 mb-4" />
-          <div class="flex flex-wrap gap-4">
-            <div v-for="i in 4" :key="i" class="flex items-center gap-2 w-40">
-              <SkeletonBlock class="w-12 h-12 rounded-full shrink-0" />
-              <div class="flex flex-col gap-1 flex-1">
-                <SkeletonBlock class="h-3 w-full" />
-                <SkeletonBlock class="h-3 w-3/4" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
+    <ShowDetailContent v-else-if="show" :show="show" />
+    <ShowDetailContent v-else-if="optimistic" :show="optimistic" partial />
   </main>
 </template>

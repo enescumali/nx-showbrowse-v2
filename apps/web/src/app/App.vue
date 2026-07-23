@@ -2,6 +2,10 @@
 import { RouterView } from 'vue-router';
 import NavBar from '../components/NavBar.vue';
 import ErrorBoundary from '../components/ErrorBoundary.vue';
+import ShowQuickView from '../components/ShowQuickView.vue';
+import { useQuickView } from '../composables/useQuickView';
+
+const { activeShowId } = useQuickView();
 </script>
 
 <template>
@@ -15,5 +19,5 @@ import ErrorBoundary from '../components/ErrorBoundary.vue';
   <ErrorBoundary>
     <RouterView />
   </ErrorBoundary>
+  <ShowQuickView v-if="activeShowId" :key="activeShowId" :id="activeShowId" />
 </template>
-

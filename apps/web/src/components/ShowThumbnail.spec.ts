@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import type { Show } from '@show-browse/shows';
 import ShowThumbnail from './ShowThumbnail.vue';
@@ -77,9 +77,23 @@ describe('ShowThumbnail', () => {
     expect(wrapper.text()).toContain('No Image');
   });
 
-  it('links to the show detail route', () => {
+  it('links to the show detail route (for new-tab/copy-link/no-JS)', () => {
     const wrapper = mountComponent(mockShow);
     const link = wrapper.find('a');
     expect(link.attributes('href')).toBe('/shows/42');
+  });
+
+  it('opens the quick view instead of navigating on a plain click', async () => {
+    const wrapper = mountComponent(mockShow);
+    await wrapper.find('a').trigger('click', { button: 0 });
+    await flushPromises();
+    expect(router.currentRoute.value.query.show).toBe('42');
+  });
+
+  it('lets the browser handle a ctrl-click instead of opening the quick view', async () => {
+    const wrapper = mountComponent(mockShow);
+    await wrapper.find('a').trigger('click', { button: 0, ctrlKey: true });
+    await flushPromises();
+    expect(router.currentRoute.value.query.show).toBeUndefined();
   });
 });

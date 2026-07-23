@@ -45,7 +45,11 @@ watch(searchQuery, (q) => search(q), { immediate: true });
 </script>
 
 <template>
-  <main id="main-content" tabindex="-1" class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
+  <main
+    id="main-content"
+    tabindex="-1"
+    class="max-w-[1400px] mx-auto px-4 pt-20 pb-8"
+  >
     <!-- Search mode -->
     <template v-if="isSearchMode">
       <h1 class="text-2xl font-bold text-text mb-6">

@@ -2,10 +2,15 @@
 import type { Show } from '@show-browse/shows';
 import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useQuickView } from '../composables/useQuickView';
 
 const props = defineProps<{ show: Show }>();
 const router = useRouter();
+const { openShow } = useQuickView();
 
+// href still points at the real detail page — a primary click opens the
+// quick-view panel instead (see navigate()), but this keeps "open in new
+// tab"/"copy link"/no-JS behavior pointing at the actual permalink.
 const href = router.resolve({
   name: 'ShowDetail',
   params: { id: props.show.id },
@@ -16,11 +21,7 @@ function navigate(e: MouseEvent) {
   if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)
     return;
   e.preventDefault();
-  router.push({
-    name: 'ShowDetail',
-    params: { id: props.show.id },
-    state: { showJson: JSON.stringify(props.show) },
-  });
+  openShow(props.show.id, JSON.stringify(props.show));
 }
 
 const wrapperRef = ref<HTMLElement | null>(null);

@@ -89,7 +89,11 @@ watch(
 </script>
 
 <template>
-  <main id="main-content" tabindex="-1" class="max-w-[1400px] mx-auto px-4 pt-20 pb-8">
+  <main
+    id="main-content"
+    tabindex="-1"
+    class="max-w-[1400px] mx-auto px-4 pt-20 pb-8"
+  >
     <header class="mb-6">
       <h1 class="text-3xl font-bold text-text m-0">All Shows</h1>
       <p class="text-text-subtle text-sm mt-1">
