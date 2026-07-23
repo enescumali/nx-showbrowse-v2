@@ -17,7 +17,10 @@ function makeShow(
   };
 }
 
-function findGroup(groups: ReturnType<typeof groupShowsByGenre>, genre: string) {
+function findGroup(
+  groups: ReturnType<typeof groupShowsByGenre>,
+  genre: string,
+) {
   return groups.find((g) => g.genre === genre)?.shows ?? [];
 }
 

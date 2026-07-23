@@ -1,2 +1,4 @@
 npx lint-staged
 npx tsc --noEmit -p apps/web/tsconfig.json
+npx tsc --noEmit -p packages/shows/tsconfig.json
+npx tsc --noEmit -p apps/api/tsconfig.json

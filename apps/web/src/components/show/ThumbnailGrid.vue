@@ -14,4 +14,3 @@ defineProps<{ shows: Show[] }>();
     <ShowThumbnail v-for="show in shows" :key="show.id" :show="show" />
   </section>
 </template>
-

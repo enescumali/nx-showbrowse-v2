@@ -32,8 +32,7 @@ export const showsPlugin = {
     const getGenreNamesUseCase = createGetGenreNamesUseCase(apiClient);
     const getShowDetailUseCase = createGetShowDetailUseCase(apiClient);
     const searchShowsUseCase = createSearchShowsUseCase(apiClient);
-    const getShowsByCountryUseCase =
-      createGetShowsByCountryUseCase(apiClient);
+    const getShowsByCountryUseCase = createGetShowsByCountryUseCase(apiClient);
 
     app.provide(SHOWS_USE_CASES_KEY, {
       getCatalogPage: (query) => getCatalogPageUseCase(query),

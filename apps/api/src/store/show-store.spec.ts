@@ -62,8 +62,12 @@ describe('createShowStore', () => {
     ]);
 
     const groups = store.getByGenre();
-    expect(groups.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 1]); // sorted by rating desc
-    expect(groups.find((g) => g.genre === 'Comedy')?.shows.map((s) => s.id)).toEqual([2]);
+    expect(
+      groups.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id),
+    ).toEqual([2, 1]); // sorted by rating desc
+    expect(
+      groups.find((g) => g.genre === 'Comedy')?.shows.map((s) => s.id),
+    ).toEqual([2]);
   });
 
   it('getByGenre(limit) slices each group without affecting the cached full grouping', () => {
@@ -75,10 +79,14 @@ describe('createShowStore', () => {
     ]);
 
     const limited = store.getByGenre(2);
-    expect(limited.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 3]);
+    expect(
+      limited.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id),
+    ).toEqual([2, 3]);
 
     const full = store.getByGenre();
-    expect(full.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id)).toEqual([2, 3, 1]);
+    expect(
+      full.find((g) => g.genre === 'Drama')?.shows.map((s) => s.id),
+    ).toEqual([2, 3, 1]);
   });
 
   it('getGenreNames() returns genre + count with no show payloads', () => {

@@ -54,11 +54,7 @@ const pageSizeModel = computed({
         class="bg-card-alt text-text text-sm rounded border border-border px-2 py-1"
       >
         <option value="">Default order</option>
-        <option
-          v-for="opt in SORT_OPTIONS"
-          :key="opt.value"
-          :value="opt.value"
-        >
+        <option v-for="opt in SORT_OPTIONS" :key="opt.value" :value="opt.value">
           {{ opt.label }}
         </option>
       </select>
