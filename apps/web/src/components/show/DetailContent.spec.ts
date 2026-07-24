@@ -34,9 +34,9 @@ const showDetail: ShowDetail = {
   ],
 };
 
-function mountContent(show: ShowDetail) {
+function mountContent(show: ShowDetail, showCast?: boolean) {
   return mount(ShowDetailContent, {
-    props: { show },
+    props: showCast === undefined ? { show } : { show, showCast },
     global: { plugins: [router], stubs: { RouterLink } },
   });
 }
@@ -59,6 +59,12 @@ describe('ShowDetailContent', () => {
 
   it('does not render a cast section when there is no cast', () => {
     const wrapper = mountContent({ ...showDetail, cast: [] });
+    expect(wrapper.find('h2').exists()).toBe(false);
+  });
+
+  it('does not render cast when showCast is false, even with cast data', () => {
+    const wrapper = mountContent(showDetail, false);
+    expect(wrapper.text()).not.toContain('Bryan Cranston');
     expect(wrapper.find('h2').exists()).toBe(false);
   });
 });

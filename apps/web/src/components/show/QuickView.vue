@@ -135,7 +135,7 @@ function afterLeave() {
           {{ error }}
         </div>
 
-        <ShowDetailContent v-else-if="show" :show="show" />
+        <ShowDetailContent v-else-if="show" :show="show" :show-cast="false" />
       </div>
     </div>
   </Transition>

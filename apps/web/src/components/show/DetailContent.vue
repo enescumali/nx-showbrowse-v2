@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { ShowDetail } from '@show-browse/shows';
 
-defineProps<{
-  show: ShowDetail;
-}>();
+withDefaults(
+  defineProps<{
+    show: ShowDetail;
+    showCast?: boolean;
+  }>(),
+  { showCast: true },
+);
 </script>
 
 <template>
@@ -46,7 +50,7 @@ defineProps<{
         {{ show.overview }}
       </p>
 
-      <section v-if="show.cast?.length">
+      <section v-if="showCast && show.cast?.length">
         <h2 class="text-xl font-semibold text-text mb-4">Cast</h2>
         <ul class="flex flex-wrap gap-4 list-none p-0 m-0">
           <li

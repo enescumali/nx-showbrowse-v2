@@ -64,6 +64,28 @@ describe('ShowQuickView', () => {
     expect(wrapper.find('[role="alert"]').text()).toBe('Not found');
   });
 
+  it('never renders cast, even when the fetched show has cast data', async () => {
+    const wrapper = mountQuickView(
+      makeUseCases({
+        getShowDetail: async () => ({
+          ...mockDetail,
+          cast: [
+            {
+              id: 1,
+              name: 'Bryan Cranston',
+              character: 'Walter White',
+              profileUrl: '',
+            },
+          ],
+        }),
+      }),
+    );
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain('Bryan Cranston');
+    expect(wrapper.find('h2').exists()).toBe(false);
+  });
+
   it('links to the full detail page for the same show', async () => {
     const wrapper = mountQuickView();
     await flushPromises();
