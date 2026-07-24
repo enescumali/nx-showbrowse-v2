@@ -2,7 +2,7 @@
 
 A Netflix-style TV show browser backed by `apps/api`, a backend-for-frontend that syncs the full [TVMaze](https://www.tvmaze.com/api) show index.
 
-Live demo: https://nx-showbrowse.vercel.app/
+Live demo: https://nx-showbrowse-v2.vercel.app/ (backed by `apps/api` at https://showbrowse-api.onrender.com — free tier, spins down after 15 min idle; first request after that can take 30–50s)
 
 ## Requirements
 
@@ -213,12 +213,14 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request:
 2. **Type-check** — `tsc --noEmit` on the web app and packages
 3. **Unit tests** — Vitest
 4. **E2E tests** — Playwright (Chromium); report uploaded on failure
-5. **Deploy (manual)** - by-pass actions and directly deploy to production (eg. hot fixes)
 
 A **pre-commit hook** (Husky + lint-staged) runs ESLint + Prettier on staged files and a TypeScript type-check before every commit.
 
-After each time actions above succesfully performed, deployment
-is automatically to done production environment.
+### Deploys
+
+`apps/web` deploys via Vercel's own Git integration — it auto-builds and deploys on every push to `main` regardless of what changed, which is fine since it's a stateless static rebuild with no meaningful cost to redeploying unnecessarily.
+
+`apps/api` is different: it's a stateful, memory-constrained process (see [Backend](#backend-appsapi)), so redeploying it on every push — including ones that never touched `apps/api` — would mean an unnecessary restart (brief downtime, re-running the boot sequence) for no reason. `render.yaml` sets `autoDeploy: false` to opt out of Render's own git-triggered deploys, and `.github/workflows/deploy.yml` triggers it explicitly instead: on every push to `main`, it runs `nx show projects --affected` against the previous commit, and only calls `apps/api`'s Render deploy hook (`RENDER_DEPLOY_HOOK_URL` secret) when `api` is actually in the affected set. A manual `workflow_dispatch` run always deploys, as an explicit override.
 
 ## Reproducible Installs
 

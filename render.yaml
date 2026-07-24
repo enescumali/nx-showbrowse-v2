@@ -3,6 +3,7 @@ services:
     name: showbrowse-api
     runtime: node
     plan: free
+    autoDeploy: false # deploys are triggered explicitly by .github/workflows/deploy.yml, gated on `nx affected`
     buildCommand: npm ci --include=dev
     startCommand: npx tsx --tsconfig apps/api/tsconfig.json apps/api/src/main.ts
     healthCheckPath: /health

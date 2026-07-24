@@ -1,26 +1,57 @@
-name: Deploy (manual)
+name: Deploy
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to Vercel
+  affected:
+    name: Detect affected projects
     runs-on: ubuntu-latest
-
+    outputs:
+      api: ${{ steps.detect.outputs.api }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Deploy to Vercel
-        run: npx --yes vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Determine affected projects
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger is an explicit override — deploy.
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BASE="${{ github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            # First push to a new branch, or history Nx can't diff against —
+            # fail open and deploy rather than silently deploying nothing.
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          AFFECTED=$(npx nx show projects --affected --base="$BASE" --head=HEAD --json)
+          echo "affected projects: $AFFECTED"
+
+          echo "$AFFECTED" | jq -e 'any(. == "api")' >/dev/null \
+            && echo "api=true" >> "$GITHUB_OUTPUT" \
+            || echo "api=false" >> "$GITHUB_OUTPUT"
+
+  deploy-api:
+    name: Deploy apps/api to Render
+    needs: affected
+    if: needs.affected.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
