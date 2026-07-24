@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev
-    startCommand: npx nx run api:start
+    startCommand: npx tsx --tsconfig apps/api/tsconfig.json apps/api/src/main.ts
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

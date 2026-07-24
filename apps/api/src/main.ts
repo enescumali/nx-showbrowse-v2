@@ -1,5 +1,5 @@
 import { env } from './config/env';
-import { readSnapshot, writeSnapshot } from './ingestion/snapshot';
+import { readSnapshot } from './ingestion/snapshot';
 import { readSeedSnapshot } from './ingestion/seed-snapshot';
 import { scheduleDailySync } from './scheduling/cron';
 import { createContainer } from './di/container';
@@ -38,15 +38,10 @@ async function bootstrap(): Promise<void> {
     console.log(
       `[api] warm-started from ${source} snapshot: ${snapshot.length} shows`,
     );
-    // Ephemeral-disk hosts have no live snapshot yet on a fresh container —
-    // persist the seed to the live path so a restart within this same
-    // container's lifetime (and the daily incremental sync) build on it
-    // instead of re-reading the seed every time.
-    if (source === 'seed') {
-      await writeSnapshot(env.snapshotPath, snapshot).catch((err: unknown) => {
-        console.error('[api] failed to persist seed to the live path:', err);
-      });
-    }
+    // Not persisted to the live snapshot path here — re-stringifying the
+    // full array right after parsing it would double peak memory at boot,
+    // the worst possible moment. The daily incremental sync (and
+    // /admin/refresh) already write it once they run.
   } else {
     console.log(
       '[api] no snapshot found — starting the initial crawl in the background',
