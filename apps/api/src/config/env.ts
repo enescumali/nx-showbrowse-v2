@@ -22,6 +22,7 @@ export interface Env {
   syncCronSchedule: string;
   requestsPerSecond: number;
   snapshotPath: string;
+  seedSnapshotPath: string;
 }
 
 function readEnv(): Env {
@@ -33,6 +34,9 @@ function readEnv(): Env {
     requestsPerSecond: Number(process.env.REQUESTS_PER_SECOND ?? 1.8),
     snapshotPath:
       process.env.SNAPSHOT_PATH ?? join(appRoot, 'data', 'shows-snapshot.json'),
+    // Repo-committed crawl result, not env-configurable — a build asset,
+    // not a runtime cache location. See ingestion/seed-snapshot.ts.
+    seedSnapshotPath: join(appRoot, 'data', 'seed-snapshot.json.gz'),
   };
 }
 
